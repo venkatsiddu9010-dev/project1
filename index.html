@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Github Browser — Browse. Run. Ship.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d1117;
+    --surface:#12161d;
+    --surface-2:#161b22;
+    --line:#232a35;
+    --text:#e6edf3;
+    --muted:#8b949e;
+    --green:#3fb950;
+    --violet:#a371f7;
+    --gold:#d29922;
+    --blue:#58a6ff;
+    --pink:#f778ba;
+    --red:#f85149;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0;letter-spacing:-0.01em;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--green);color:#04160a;}
+  :focus-visible{outline:2px solid var(--blue);outline-offset:3px;}
+
+  .wrap{max-width:1160px;margin:0 auto;padding:0 28px;}
+  section{position:relative;}
+
+  /* background texture: faint grid + glow */
+  .bg-grid{
+    position:fixed;inset:0;z-index:-2;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:64px 64px;
+    opacity:0.18;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+  .bg-glow{
+    position:fixed;top:-200px;left:50%;transform:translateX(-50%);
+    width:900px;height:600px;z-index:-1;
+    background:radial-gradient(circle, rgba(63,185,80,0.16), rgba(163,113,247,0.08) 45%, transparent 70%);
+    filter:blur(40px);
+  }
+
+  /* NAV */
+  header{
+    position:sticky;top:0;z-index:200;
+    background:rgba(13,17,23,0.75);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem;}
+  .brand-mark{
+    width:30px;height:30px;border-radius:8px;
+    background:linear-gradient(135deg,var(--green),var(--blue));
+    display:flex;align-items:center;justify-content:center;
+    color:#04160a;font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;
+  }
+  .nav-links{display:flex;gap:28px;font-size:0.92rem;color:var(--muted);}
+  .nav-links a{transition:color .2s;}
+  .nav-links a:hover{color:var(--text);}
+  .nav-cta{
+    padding:8px 16px;border-radius:8px;background:var(--text);color:var(--ink);
+    font-weight:600;font-size:0.88rem;transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(63,185,80,0.25);}
+  .nav-toggle{display:none;background:none;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;cursor:pointer;}
+
+  /* HERO */
+  .hero{padding:96px 0 72px;}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--green);
+    border:1px solid rgba(63,185,80,0.35);background:rgba(63,185,80,0.08);
+    padding:6px 12px;border-radius:999px;margin-bottom:22px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+  .hero h1{font-size:clamp(2.4rem, 6vw, 4.4rem);font-weight:700;line-height:1.04;}
+  .hero h1 .grad{background:linear-gradient(90deg,var(--green),var(--blue) 60%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p.tag{margin-top:20px;font-size:1.2rem;color:var(--muted);max-width:640px;}
+  .hero p.desc{margin-top:14px;font-size:1rem;color:var(--muted);max-width:600px;}
+  .hero-actions{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap;}
+  .btn{
+    padding:13px 24px;border-radius:9px;font-weight:600;font-size:0.95rem;
+    display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid transparent;
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  .btn-primary{background:var(--green);color:#04160a;}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(63,185,80,0.28);}
+  .btn-ghost{border-color:var(--line);color:var(--text);background:transparent;}
+  .btn-ghost:hover{border-color:var(--muted);transform:translateY(-2px);}
+
+  /* language spectrum bar — signature element */
+  .lang-bar{display:flex;width:100%;height:10px;border-radius:6px;overflow:hidden;margin-top:14px;box-shadow:0 0 0 1px var(--line) inset;}
+  .lang-bar span{height:100%;transition:filter .2s;}
+  .lang-bar span:hover{filter:brightness(1.3);}
+  .lang-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:0.74rem;color:var(--muted);}
+  .lang-legend .chip{display:inline-flex;align-items:center;gap:6px;}
+  .lang-legend .sw{width:9px;height:9px;border-radius:2px;}
+
+  /* hero visual: mock IDE window */
+  .hero-visual{margin-top:56px;}
+  .window{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,0.6);
+  }
+  .window-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface-2);}
+  .window-bar .b{width:10px;height:10px;border-radius:50%;}
+  .b.r{background:#f85149;}.b.y{background:#d29922;}.b.g{background:#3fb950;}
+  .window-bar .path{margin-left:12px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--muted);}
+  .window-body{display:grid;grid-template-columns:200px 1fr;min-height:280px;}
+  .tree{border-right:1px solid var(--line);padding:16px 14px;font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--muted);}
+  .tree .item{padding:5px 0;cursor:default;}
+  .tree .item.active{color:var(--green);}
+  .tree .folder::before{content:"▸ ";}
+  .code-pane{padding:18px 20px;font-family:'JetBrains Mono',monospace;font-size:0.84rem;color:var(--text);position:relative;}
+  .code-pane .ln{color:#4b5560;display:inline-block;width:22px;user-select:none;}
+  .code-pane .kw{color:var(--violet);}
+  .code-pane .str{color:var(--gold);}
+  .code-pane .fn{color:var(--blue);}
+  .code-pane .cm{color:#4b5560;}
+  #typedOut::after{content:"▍";animation:blink 1s step-start infinite;color:var(--green);}
+  @keyframes blink{50%{opacity:0;}}
+  .run-strip{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:10px 20px;background:var(--surface-2);font-family:'JetBrains Mono',monospace;font-size:0.76rem;color:var(--muted);}
+  .run-strip .ok{color:var(--green);}
+
+  /* generic section heading */
+  .kicker{font-family:'JetBrains Mono',monospace;color:var(--green);font-size:0.8rem;letter-spacing:0.06em;text-transform:uppercase;}
+  .section-head{max-width:640px;margin-bottom:44px;}
+  .section-head h2{font-size:clamp(1.7rem,3.4vw,2.4rem);margin-top:10px;}
+  .section-head p{color:var(--muted);margin-top:14px;font-size:1rem;}
+
+  section.padded{padding:88px 0;}
+  section.divider{border-top:1px solid var(--line);}
+
+  /* about */
+  .about-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  .about-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px;transition:transform .25s ease, border-color .25s ease;
+  }
+  .about-card:hover{transform:translateY(-4px);border-color:rgba(63,185,80,0.4);}
+  .about-card .ic{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+  .about-card h3{font-size:1.05rem;margin-bottom:8px;}
+  .about-card p{color:var(--muted);font-size:0.92rem;margin:0;}
+
+  /* theme section */
+  .theme-wrap{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;}
+  .theme-points .point{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--line);}
+  .theme-points .point:last-child{border-bottom:none;}
+  .theme-points .num{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:0.85rem;padding-top:2px;}
+  .theme-points h4{font-size:1rem;margin-bottom:6px;}
+  .theme-points p{color:var(--muted);font-size:0.9rem;margin:0;}
+  .theme-orb{
+    aspect-ratio:1/1;border-radius:50%;position:relative;
+    background:conic-gradient(from 180deg,var(--green),var(--blue),var(--violet),var(--pink),var(--gold),var(--green));
+    padding:3px;
+  }
+  .theme-orb-inner{
+    background:var(--ink);border-radius:50%;width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;text-align:center;
+  }
+  .theme-orb-inner .big{font-family:'Space Grotesk',sans-serif;font-size:2.6rem;font-weight:700;}
+  .theme-orb-inner .lbl{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:0.8rem;}
+
+  /* team */
+  .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
+  .team-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:24px 20px;text-align:center;transition:transform .25s ease, border-color .25s ease;
+  }
+  .team-card:hover{transform:translateY(-6px);border-color:rgba(88,166,255,0.4);}
+  .avatar{
+    width:76px;height:76px;border-radius:50%;margin:0 auto 16px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.3rem;color:#04160a;
+  }
+  .team-card h3{font-size:1.02rem;}
+  .team-card .role{color:var(--green);font-family:'JetBrains Mono',monospace;font-size:0.76rem;margin-top:4px;}
+  .team-card p.contrib{color:var(--muted);font-size:0.86rem;margin-top:12px;}
+  .team-card .socials{display:flex;justify-content:center;gap:10px;margin-top:14px;}
+  .team-card .socials a{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:var(--muted);transition:.2s;}
+  .team-card .socials a:hover{color:var(--text);border-color:var(--muted);}
+
+  /* highlights */
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-bottom:40px;}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;}
+  .stat .num{font-family:'Space Grotesk',sans-serif;font-size:2.1rem;font-weight:700;}
+  .stat .num.green{color:var(--green);}
+  .stat .num.blue{color:var(--blue);}
+  .stat .num.violet{color:var(--violet);}
+  .stat .num.gold{color:var(--gold);}
+  .stat .lbl{color:var(--muted);font-size:0.85rem;margin-top:6px;}
+
+  .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  .feat-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;transition:transform .25s ease;}
+  .feat-card:hover{transform:translateY(-4px);}
+  .feat-card .ic{width:36px;height:36px;margin-bottom:14px;}
+  .feat-card h3{font-size:1rem;margin-bottom:8px;}
+  .feat-card p{color:var(--muted);font-size:0.88rem;margin:0;}
+
+  /* CTA band */
+  .cta-band{
+    margin:0 auto;padding:56px 40px;border-radius:20px;
+    background:linear-gradient(135deg, rgba(63,185,80,0.12), rgba(88,166,255,0.08));
+    border:1px solid var(--line);text-align:center;
+  }
+  .cta-band h2{font-size:clamp(1.5rem,3vw,2.1rem);}
+  .cta-band p{color:var(--muted);margin-top:12px;}
+  .cta-band .hero-actions{justify-content:center;margin-top:26px;}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);padding:52px 0 30px;}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;padding-bottom:36px;}
+  .foot-brand p{color:var(--muted);font-size:0.9rem;margin-top:12px;max-width:280px;}
+  footer h4{font-size:0.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:14px;}
+  footer ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;}
+  footer ul a{color:var(--text);font-size:0.9rem;opacity:0.85;transition:.2s;}
+  footer ul a:hover{opacity:1;color:var(--green);}
+  .foot-bottom{border-top:1px solid var(--line);padding-top:22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;color:var(--muted);font-size:0.82rem;font-family:'JetBrains Mono',monospace;}
+
+  /* reveal-on-scroll */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1;transform:none;}
+
+  @media (max-width:900px){
+    .about-grid{grid-template-columns:1fr 1fr;}
+    .team-grid{grid-template-columns:1fr 1fr;}
+    .stat-row{grid-template-columns:1fr 1fr;}
+    .feat-grid{grid-template-columns:1fr 1fr;}
+    .theme-wrap{grid-template-columns:1fr;}
+    .foot-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:640px){
+    .nav-links{display:none;}
+    .nav-toggle{display:inline-block;}
+    .window-body{grid-template-columns:1fr;}
+    .tree{display:none;}
+    .about-grid,.team-grid,.stat-row,.feat-grid{grid-template-columns:1fr;}
+    .foot-grid{grid-template-columns:1fr;}
+    .hero{padding:64px 0 48px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<header>
+  <div class="wrap">
+    <nav>
+      <div class="brand"><div class="brand-mark">&lt;/&gt;</div>Github Browser</div>
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#theme">Theme</a>
+        <a href="#team">Team</a>
+        <a href="#highlights">Highlights</a>
+      </div>
+      <a href="#explore" class="nav-cta">Explore Project</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow"><span class="dot"></span>60 languages · one browser tab</span>
+      <h1>Browse any public repo.<br><span class="grad">Run its code.</span> Instantly.</h1>
+      <p class="tag">Access for GitHub — point it at any public repository and get a live editor plus a real output pane, no local setup required.</p>
+      <p class="desc">Github Browser lets you explore a public repo's file tree, open any source file with syntax highlighting, and execute it — across 60 supported languages — directly from the browser. Static sites render live; scripts compile and run with real stdout.</p>
+      <div class="hero-actions">
+        <a href="#explore" class="btn btn-primary">Explore Project →</a>
+        <a href="#about" class="btn btn-ghost">Learn More</a>
+      </div>
+
+      <!-- signature: language spectrum bar -->
+      <div class="lang-bar" id="langBar"></div>
+      <div class="lang-legend">
+        <span class="chip"><span class="sw" style="background:var(--blue)"></span>Python</span>
+        <span class="chip"><span class="sw" style="background:var(--gold)"></span>JavaScript</span>
+        <span class="chip"><span class="sw" style="background:var(--violet)"></span>Java</span>
+        <span class="chip"><span class="sw" style="background:var(--green)"></span>Go</span>
+        <span class="chip"><span class="sw" style="background:var(--pink)"></span>Rust</span>
+        <span class="chip"><span class="sw" style="background:var(--red)"></span>C++</span>
+        <span class="chip">+ 54 more</span>
+      </div>
+
+      <!-- hero visual -->
+      <div class="hero-visual reveal" id="explore">
+        <div class="window">
+          <div class="window-bar">
+            <span class="b r"></span><span class="b y"></span><span class="b g"></span>
+            <span class="path mono">owner/repo → src/main.py</span>
+          </div>
+          <div class="window-body">
+            <div class="tree">
+              <div class="item folder">src</div>
+              <div class="item active" style="padding-left:16px;">main.py</div>
+              <div class="item" style="padding-left:16px;">utils.py</div>
+              <div class="item folder">tests</div>
+              <div class="item">README.md</div>
+              <div class="item">requirements.txt</div>
+            </div>
+            <div class="code-pane">
+<div><span class="ln">1</span><span class="cm"># fetched live from GitHub</span></div>
+<div><span class="ln">2</span><span class="kw">def</span> <span class="fn">greet</span>(name):</div>
+<div><span class="ln">3</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="str">f"Hello, {name}!"</span></div>
+<div><span class="ln">4</span></div>
+<div><span class="ln">5</span><span class="kw">print</span>(greet(<span class="str">"world"</span>))</div>
+<div style="margin-top:14px;color:var(--muted);"><span class="ln">&gt;</span> <span id="typedOut"></span></div>
+            </div>
+          </div>
+          <div class="run-strip">
+            <span>python3 · exit 0</span>
+            <span class="ok">● output ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="padded divider" id="about">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">01 · About the project</span>
+        <h2>Reading code shouldn't require cloning it first.</h2>
+        <p>Github Browser removes the friction between finding a public repository and actually understanding what it does — no git installed, no IDE configured, no dependency setup.</p>
+      </div>
+      <div class="about-grid">
+        <div class="about-card reveal">
+          <div class="ic" style="background:rgba(63,185,80,0.14);color:var(--green);">◆</div>
+          <h3>The problem</h3>
+          <p>Evaluating a repo usually means cloning it, installing a toolchain, and configuring an environment just to see it run — too much overhead for a quick look.</p>
+        </div>
+        <div class="about-card reveal">
+          <div class="ic" style="background:rgba(88,166,255,0.14);color:var(--blue);">◆</div>
+          <h3>Our objective</h3>
+          <p>Give anyone a single URL that opens a repo's files and runs its code in place, so browsing and evaluating a project takes seconds, not minutes.</p>
+        </div>
+        <div class="about-card reveal">
+          <div class="ic" style="background:rgba(163,113,247,0.14);color:var(--violet);">◆</div>
+          <h3>Why it matters</h3>
+          <p>Faster code review, easier teaching material, and a lighter way to sample open-source projects before committing local time to them.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THEME -->
+  <section class="padded divider" id="theme">
+    <div class="wrap">
+      <div class="theme-wrap">
+        <div class="reveal">
+          <span class="kicker">02 · Project theme</span>
+          <h2 style="margin-top:10px;margin-bottom:26px;">Access for GitHub</h2>
+          <div class="theme-points">
+            <div class="point">
+              <span class="num">01</span>
+              <div><h4>Browse</h4><p>Navigate any public repository's real file tree by owner, repo, and branch — folders, files, images, all of it.</p></div>
+            </div>
+            <div class="point">
+              <span class="num">02</span>
+              <div><h4>Read</h4><p>Open a file and get syntax-highlighted source instantly, in the language it was actually written in.</p></div>
+            </div>
+            <div class="point">
+              <span class="num">03</span>
+              <div><h4>Run</h4><p>Execute the file — static sites render live in a preview pane, scripts run against a 60-language execution engine.</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="theme-orb reveal">
+          <div class="theme-orb-inner">
+            <div class="big">60</div>
+            <div class="lbl">languages, one runtime</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section class="padded divider" id="team">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">03 · Our team</span>
+        <h2>The people behind Github Browser</h2>
+        <p>A small team covering the browser UI, the GitHub integration, and the multi-language execution backend.</p>
+      </div>
+      <div class="team-grid">
+
+        <div class="team-card reveal">
+          <div class="avatar" style="background:linear-gradient(135deg,var(--green),var(--blue));">AS</div>
+          <h3>Aarav Sharma</h3>
+          <div class="role">Project Lead &amp; Frontend</div>
+          <p class="contrib">Owns the overall architecture and built the resizable IDE layout and file explorer.</p>
+          <div class="socials"><a href="#" aria-label="GitHub">GH</a><a href="#" aria-label="LinkedIn">in</a></div>
+        </div>
+
+        <div class="team-card reveal">
+          <div class="avatar" style="background:linear-gradient(135deg,var(--violet),var(--pink));">RK</div>
+          <h3>Riya Kapoor</h3>
+          <div class="role">GitHub Integration</div>
+          <p class="contrib">Built the repository browsing layer — file tree, branches, and content fetching.</p>
+          <div class="socials"><a href="#" aria-label="GitHub">GH</a><a href="#" aria-label="LinkedIn">in</a></div>
+        </div>
+
+        <div class="team-card reveal">
+          <div class="avatar" style="background:linear-gradient(135deg,var(--gold),var(--red));">DV</div>
+          <h3>Dev Verma</h3>
+          <div class="role">Execution Engine</div>
+          <p class="contrib">Wired up the 60-language code runner and output console.</p>
+          <div class="socials"><a href="#" aria-label="GitHub">GH</a><a href="#" aria-label="LinkedIn">in</a></div>
+        </div>
+
+        <div class="team-card reveal">
+          <div class="avatar" style="background:linear-gradient(135deg,var(--blue),var(--green));">SP</div>
+          <h3>Sana Patel</h3>
+          <div class="role">UI / UX Design</div>
+          <p class="contrib">Designed the editor experience, theming, and the responsive layout.</p>
+          <div class="socials"><a href="#" aria-label="GitHub">GH</a><a href="#" aria-label="LinkedIn">in</a></div>
+        </div>
+
+      </div>
+      <p style="text-align:center;color:var(--muted);font-size:0.82rem;margin-top:26px;">Names, roles, and photos above are placeholders — swap in your team's real details and headshots.</p>
+    </div>
+  </section>
+
+  <!-- HIGHLIGHTS -->
+  <section class="padded divider" id="highlights">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">04 · Project highlights</span>
+        <h2>Built for speed, breadth, and clarity</h2>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat reveal"><div class="num green">60+</div><div class="lbl">Languages executable</div></div>
+        <div class="stat reveal"><div class="num blue">1</div><div class="lbl">URL to browse any public repo</div></div>
+        <div class="stat reveal"><div class="num violet">0</div><div class="lbl">Local installs required</div></div>
+        <div class="stat reveal"><div class="num gold">3</div><div class="lbl">Panel workspace: tree, editor, output</div></div>
+      </div>
+
+      <div class="feat-grid">
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--green);">▤</div>
+          <h3>Full repo navigation</h3>
+          <p>Traverse folders, breadcrumbs, and branches exactly as they exist in the source repository.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--blue);">▦</div>
+          <h3>Live preview for the web</h3>
+          <p>HTML entry points render immediately in an embedded preview pane — no build step.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--violet);">▧</div>
+          <h3>60-language execution</h3>
+          <p>From Python to Go to Kotlin, run source files and read real stdout and stderr output.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--gold);">▨</div>
+          <h3>Syntax-aware editor</h3>
+          <p>Full syntax highlighting and an editable view for any file you open, ready to tweak and re-run.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--pink);">▥</div>
+          <h3>Distraction-free focus mode</h3>
+          <p>Maximize the editor or the output pane to full screen when you need to concentrate on one thing.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--red);">▩</div>
+          <h3>Shareable state</h3>
+          <p>The current repo, branch, and file are encoded in the URL — send a link straight to the exact view.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="padded">
+    <div class="wrap">
+      <div class="cta-band reveal">
+        <h2>Ready to browse a repo without leaving the tab?</h2>
+        <p>Drop in an owner/repo, pick a branch, and start reading — or running — the code.</p>
+        <div class="hero-actions">
+          <a href="#" class="btn btn-primary">Explore Project →</a>
+          <a href="#" class="btn btn-ghost">View on GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand"><div class="brand-mark">&lt;/&gt;</div>Github Browser</div>
+        <p>A browser-based way to explore public GitHub repositories and run their code across 60 languages.</p>
+      </div>
+      <div>
+        <h4>Team</h4>
+        <ul>
+          <li>Aarav Sharma — Project Lead</li>
+          <li>Riya Kapoor — GitHub Integration</li>
+          <li>Dev Verma — Execution Engine</li>
+          <li>Sana Patel — UI / UX Design</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Project</h4>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#theme">Theme</a></li>
+          <li><a href="#highlights">Highlights</a></li>
+          <li><a href="#">Source on GitHub</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Github Browser. Built for exploring open source.</span>
+      <span>Made with 60 languages in mind.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Signature language spectrum bar — generated with realistic GitHub-style language weights
+  (function(){
+    const langs = [
+      {n:'Python',w:22,c:'var(--blue)'},
+      {n:'JavaScript',w:18,c:'var(--gold)'},
+      {n:'Java',w:12,c:'var(--violet)'},
+      {n:'Go',w:9,c:'var(--green)'},
+      {n:'Rust',w:8,c:'var(--pink)'},
+      {n:'C++',w:7,c:'var(--red)'},
+      {n:'TypeScript',w:6,c:'var(--blue)'},
+      {n:'Ruby',w:5,c:'var(--red)'},
+      {n:'C#',w:5,c:'var(--green)'},
+      {n:'Other 51',w:8,c:'var(--muted)'}
+    ];
+    const bar = document.getElementById('langBar');
+    langs.forEach(l=>{
+      const s = document.createElement('span');
+      s.style.width = l.w + '%';
+      s.style.background = l.c;
+      s.title = l.n;
+      bar.appendChild(s);
+    });
+  })();
+
+  // Typing effect for hero terminal output
+  (function(){
+    const el = document.getElementById('typedOut');
+    const text = 'Hello, world!';
+    let i = 0;
+    function type(){
+      if(i <= text.length){
+        el.textContent = text.slice(0, i);
+        i++;
+        setTimeout(type, 70);
+      }
+    }
+    setTimeout(type, 900);
+  })();
+
+  // Scroll reveal
+  (function(){
+    const items = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, {threshold:0.15});
+    items.forEach(i=>io.observe(i));
+  })();
+</script>
+
+</body>
+</html>
+ 
+// github pat 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
