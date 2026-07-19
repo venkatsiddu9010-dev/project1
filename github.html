@@ -1,400 +1,1485 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeLab - Void-IDE</title>
-    
-    <!-- Libraries -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="https://open4discuss.nhforums.net/uploads/avatars/10.png?v=1735489416">
-    <style>
-        :root {
-            --bg-body: #02040a;
-            --bg-panel-trans: rgba(10, 15, 30, 0.8);
-            --bg-panel-solid: #0d1117;
-            --text-primary: #e0e8ff;
-            --text-secondary: #a0a8d0;
-            --text-header: #61dafb;
-            --accent-color: #00f2ea;
-            --accent-glow: rgba(0, 242, 234, 0.5);
-            --border-color: rgba(60, 80, 150, 0.4);
-            --border-light-color: rgba(60, 80, 150, 0.2);
-            --error-color: #ff5577;
-            --font-family-body: "Exo 2", sans-serif;
-            --font-family-header: "Orbitron", sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Void IDE — Repository Browser</title>
 
-        /* --- Background & Core Layout --- */
-        @keyframes animStar { from { transform: translateY(0px); } to { transform: translateY(-2000px); } }
-        #background-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1; background-color: var(--bg-body); }
-        .stars { position: absolute; top: 0; left: 50%; width: 1px; height: 1px; background: transparent; box-shadow: -346px 1380px #FFF, 38px 1230px #FFF; animation: animStar 70s linear infinite; }
-        .stars2 { position: absolute; top: 0; left: 50%; width: 2px; height: 2px; background: transparent; box-shadow: -137px 404px #FFF, 150px 789px #FFF; animation: animStar 120s linear infinite; }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-        html, body { height: 100%; margin: 0; box-sizing: border-box; overflow: hidden; }
-        body { font-family: var(--font-family-body); background-color: transparent; color: var(--text-primary); display: flex; flex-direction: column; }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/eclipse.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
 
-        /* --- Header Bar --- */
-        #header-bar { flex-shrink: 0; display: flex; align-items: center; gap: 15px; padding: 8px 15px; background-color: rgba(2, 4, 10, 0.6); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); z-index: 100; }
-        #header-bar .logo { font-family: var(--font-family-header); font-size: 1.2em; color: var(--text-header); text-shadow: 0 0 5px var(--accent-glow); }
-        #header-bar input { padding: 6px 10px; font-size: 13px; background-color: var(--bg-panel-solid); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 4px; }
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 
-        /* --- Sci-Fi Button Style --- */
-        button {
-            background: linear-gradient(45deg, #238636, #2ea043);
-            color: white; border: none; padding: 8px 18px; font-size: 13px;
-            font-family: var(--font-family-body); font-weight: 600; cursor: pointer;
-            clip-path: polygon(10px 0%, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-            transition: all 0.2s ease-out; transform-style: preserve-3d; position: relative;
-        }
-        button:hover { transform: translateY(-2px) translateZ(25px); box-shadow: 0 10px 20px rgba(0, 242, 234, 0.2); filter: brightness(1.2); }
-        button:disabled { background: #555; cursor: not-allowed; filter: brightness(0.6); transform: none; box-shadow: none; }
-        .actions button { background: linear-gradient(45deg, #334, #556); padding: 4px 12px; font-size: 12px; }
-        .actions button.primary-action { background: linear-gradient(45deg, #fd7e14, #e66800); }
+<style>
+/* ============================================================
+   DESIGN TOKENS — GitHub-inspired dark / light developer theme
+   ============================================================ */
+:root,
+html[data-theme="dark"] {
+  --canvas: #0d1117;
+  --canvas-inset: #010409;
+  --surface: #161b22;
+  --surface-raised: #1c2129;
+  --surface-hover: #21262d;
+  --border: #30363d;
+  --border-muted: #21262d;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-faint: #6e7681;
+  --accent-green: #238636;
+  --accent-green-hover: #2ea043;
+  --accent-blue: #58a6ff;
+  --accent-purple: #a371f7;
+  --accent-orange: #d29922;
+  --accent-red: #f85149;
+  --focus-ring: #1f6feb;
+  --shadow-sm: 0 1px 2px rgba(1,4,9,0.4);
+  --shadow-md: 0 8px 24px rgba(1,4,9,0.55);
+  --shadow-lg: 0 16px 48px rgba(1,4,9,0.65);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
 
-        /* --- Main 3-Panel IDE Layout --- */
-        #app-container { display: flex; flex-grow: 1; overflow: hidden; padding: 15px; gap: 15px; perspective: 3000px; }
-        .panel {
-            display: flex; flex-direction: column; overflow: hidden;
-            background-color: var(--bg-panel-solid);
-            border: 1px solid var(--border-color); border-radius: 8px; position: relative;
-            transform-style: preserve-3d; transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
-        }
-        .panel:hover { transform: translateZ(15px); }
-        .panel-header { padding: 8px 12px; flex-shrink: 0; border-bottom: 1px solid var(--border-light-color); display: flex; justify-content: space-between; align-items: center; }
-        .panel-header h3 { margin: 0; font-family: var(--font-family-header); font-size: 1em; color: var(--text-header); }
-        .panel-content { flex-grow: 1; overflow: auto; padding: 5px; display: flex; flex-direction: column; }
+html[data-theme="light"] {
+  --canvas: #ffffff;
+  --canvas-inset: #f6f8fa;
+  --surface: #f6f8fa;
+  --surface-raised: #ffffff;
+  --surface-hover: #eef1f4;
+  --border: #d0d7de;
+  --border-muted: #e4e8ec;
+  --text-primary: #1f2328;
+  --text-secondary: #57606a;
+  --text-faint: #8c959f;
+  --accent-green: #1a7f37;
+  --accent-green-hover: #166a2f;
+  --accent-blue: #0969da;
+  --accent-purple: #8250df;
+  --accent-orange: #9a6700;
+  --accent-red: #cf222e;
+  --focus-ring: #0969da;
+  --shadow-sm: 0 1px 2px rgba(31,35,40,0.08);
+  --shadow-md: 0 8px 24px rgba(31,35,40,0.12);
+  --shadow-lg: 0 16px 48px rgba(31,35,40,0.18);
+}
 
-        #sidebar { flex-basis: 20%; min-width: 250px; }
-        #editor-pane { flex-basis: 50%; min-width: 300px; }
-        #output-pane { flex-basis: 30%; min-width: 250px; }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: var(--font-ui);
+  background: var(--canvas-inset);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: rgba(88,166,255,0.35); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); background-clip: content-box; }
 
-        /* --- Resizer Handles --- */
-        .resizer { flex-basis: 15px; flex-shrink: 0; cursor: col-resize; z-index: 50; display: flex; align-items: center; justify-content: center; opacity: 0.5; transition: opacity 0.2s; }
-        .resizer:hover { opacity: 1; }
-        .resizer::before { content: '‹'; color: var(--text-secondary); font-size: 20px; line-height: 0; }
-        
-        #editor-content-area { 
-            position: relative; 
-            flex-grow: 1; 
-            display: flex; 
-        }
-        
-        .CodeMirror { 
-            height: 100%; 
-            font-size: 15px; 
-        }
+button, input, select { font-family: inherit; }
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+  border-radius: 4px;
+}
+a { color: var(--accent-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+svg.icon { width: 16px; height: 16px; stroke-width: 1.75; flex-shrink: 0; }
 
-        /* --- FUTURISTIC ACTIVE LINE OVERLAY --- */
-        @keyframes activeLineGlow {
-            0%, 100% { box-shadow: 0 0 8px -2px var(--accent-glow); }
-            50% { box-shadow: 0 0 12px 0px var(--accent-color); }
-        }
-        .CodeMirror-activeline-background {
-            background: linear-gradient(to right, rgba(0, 242, 234, 0.15) 0%, rgba(0, 242, 234, 0) 70%) !important;
-        }
-        .CodeMirror-activeline-gutter {
-            background: rgba(0, 242, 234, 0.1) !important;
-            border-right: 1px solid rgba(0, 242, 234, 0.2) !important;
-        }
-        .CodeMirror-activeline-background::before,
-        .CodeMirror-activeline-background::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            height: 100%;
-            width: 5px;
-            border-color: var(--accent-color);
-            border-style: solid;
-            animation: activeLineGlow 2s ease-in-out infinite;
-        }
-        .CodeMirror-activeline-background::before {
-            left: 4px;
-            border-width: 2px 0 2px 2px;
-            border-top-left-radius: 4px;
-            border-bottom-left-radius: 4px;
-        }
-        .CodeMirror-activeline-background::after {
-            right: 10px;
-            border-width: 2px 2px 2px 0;
-            border-top-right-radius: 4px;
-            border-bottom-right-radius: 4px;
-        }
-        /* --- END OF ACTIVE LINE STYLES --- */
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  font-size: 13px; font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color .12s ease, border-color .12s ease, transform .06s ease;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) { background: var(--surface-hover); border-color: var(--text-faint); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--accent-green); border-color: var(--accent-green); color: #fff; }
+.btn.primary:hover:not(:disabled) { background: var(--accent-green-hover); border-color: var(--accent-green-hover); }
+.btn.danger-ghost:hover { border-color: var(--accent-red); color: var(--accent-red); }
+.btn.icon-only { padding: 6px; width: 32px; height: 32px; justify-content: center; }
+.btn.sm { padding: 4px 8px; font-size: 12px; }
+.btn.ghost { background: transparent; border-color: transparent; }
+.btn.ghost:hover { background: var(--surface-hover); }
 
-        /* --- Robust Fullscreen Editor Overlay --- */
-        #fullscreen-editor-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000;
-            background: rgba(2, 4, 10, 0.85); backdrop-filter: blur(8px);
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.3s ease-in-out; pointer-events: none;
-        }
-        #fullscreen-editor-overlay.visible { opacity: 1; pointer-events: auto; }
-        #fullscreen-editor-container { width: 95vw; height: 95vh; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1); }
-        #fullscreen-editor-overlay.visible #fullscreen-editor-container { transform: scale(1); }
-        #fullscreen-editor-content { flex-grow: 1; overflow: hidden; padding: 0; display: flex; }
-        #fullscreen-editor-content .CodeMirror { border-radius: 0 0 8px 8px; }
+input[type="text"], input[type="search"], select.select {
+  background: var(--canvas-inset);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  font-size: 13px;
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+input[type="text"]:focus, input[type="search"]:focus, select.select:focus {
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 0 3px rgba(31,111,235,0.25);
+  outline: none;
+}
+input::placeholder { color: var(--text-faint); }
 
-        /* Other styles */
-        #fileTreeGH li:hover { background-color: rgba(60, 80, 150, 0.2); cursor: pointer; }
-        #fileTreeGH li.active-file { background-color: rgba(60, 80, 150, 0.4); color: var(--accent-color); }
-        #output-pane #hostedSiteFrameGH { width: 100%; height: 100%; border: none; background: #fff; }
-        body.output-fullscreen-mode #sidebar, body.output-fullscreen-mode #editor-pane, body.output-fullscreen-mode .resizer, body.output-fullscreen-mode #header-bar { display: none; }
-        body.output-fullscreen-mode #output-pane { flex-basis: 100%; min-width: 100%; border-radius: 0; border: none; }
-    </style>
+/* ============================================================
+   TOP NAV
+   ============================================================ */
+#top-nav {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 200;
+}
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; margin-right: 4px; flex-shrink: 0; }
+.brand svg { width: 22px; height: 22px; color: var(--accent-blue); }
+.brand span.tag { color: var(--text-faint); font-weight: 500; font-size: 11px; border: 1px solid var(--border); border-radius: 20px; padding: 1px 8px; margin-left: 2px; }
+
+.repo-form {
+  display: flex; align-items: center; gap: 6px; flex-grow: 1; min-width: 0;
+  background: var(--canvas-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 3px;
+}
+.repo-form:focus-within { border-color: var(--focus-ring); box-shadow: 0 0 0 3px rgba(31,111,235,0.2); }
+.repo-form svg { color: var(--text-faint); margin-left: 6px; }
+#repoUrlInput { border: none; background: transparent; flex-grow: 1; min-width: 90px; box-shadow: none !important; }
+#branchSelect { border: none; background: transparent; max-width: 130px; box-shadow: none !important; color: var(--text-secondary); }
+.repo-form .divider { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
+
+.nav-search { position: relative; display: none; }
+.nav-search svg { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--text-faint); }
+#fileSearchInput { padding-left: 28px; width: 170px; }
+@media (min-width: 900px) { .nav-search { display: block; } }
+
+.nav-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+#loadingIndicator { display: none; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 12px; padding: 0 4px; }
+.spinner {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--border); border-top-color: var(--accent-blue);
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   TOASTS
+   ============================================================ */
+#toast-stack {
+  position: fixed; top: 56px; right: 16px; z-index: 3000;
+  display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+  pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface-raised); border: 1px solid var(--border);
+  color: var(--text-primary); padding: 10px 14px; border-radius: var(--radius-md);
+  font-size: 13px; box-shadow: var(--shadow-md);
+  transform: translateX(20px); opacity: 0;
+  transition: transform .25s ease, opacity .25s ease;
+  max-width: 340px;
+}
+.toast.show { transform: translateX(0); opacity: 1; }
+.toast svg { flex-shrink: 0; }
+.toast.success svg { color: var(--accent-green); }
+.toast.error svg { color: var(--accent-red); }
+.toast.info svg { color: var(--accent-blue); }
+.toast.warning svg { color: var(--accent-orange); }
+
+/* ============================================================
+   APP SHELL — three panel layout
+   ============================================================ */
+#app-shell { flex-grow: 1; display: flex; overflow: hidden; background: var(--canvas-inset); }
+
+.panel {
+  display: flex; flex-direction: column;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  min-width: 0;
+}
+#app-shell { padding: 10px; gap: 10px; }
+
+#sidebar-panel { flex-basis: 280px; flex-shrink: 0; }
+#editor-panel { flex-basis: 0; flex-grow: 2.2; }
+#output-panel { flex-basis: 0; flex-grow: 1.4; }
+
+.resizer { flex: 0 0 6px; cursor: col-resize; position: relative; }
+.resizer::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 2px; width: 2px;
+  background: var(--border); border-radius: 2px; transition: background-color .15s;
+}
+.resizer:hover::after, .resizer.active::after { background: var(--accent-blue); }
+
+.panel-header {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  min-height: 42px;
+}
+.panel-header h3 { margin: 0; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em; display: flex; align-items: center; gap: 6px; }
+.panel-header .header-actions { display: flex; align-items: center; gap: 4px; }
+
+/* ---------- SIDEBAR ---------- */
+#sidebar-panel.collapsed { flex-basis: 46px !important; }
+#sidebar-panel.collapsed .sidebar-body,
+#sidebar-panel.collapsed .repo-meta,
+#sidebar-panel.collapsed .breadcrumbs,
+#sidebar-panel.collapsed .sidebar-search { display: none; }
+
+.repo-meta { padding: 10px 12px; border-bottom: 1px solid var(--border-muted); }
+.repo-meta .repo-name { font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px; word-break: break-all; }
+.repo-meta .repo-name svg { color: var(--text-faint); }
+.repo-meta .repo-stats { display: flex; gap: 12px; margin-top: 6px; font-size: 11.5px; color: var(--text-secondary); flex-wrap: wrap; }
+.repo-meta .repo-stats span { display: flex; align-items: center; gap: 4px; }
+.repo-meta a.gh-link { font-size: 11.5px; display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; color: var(--text-secondary); }
+.repo-meta a.gh-link:hover { color: var(--accent-blue); }
+
+.sidebar-search { padding: 8px 10px; border-bottom: 1px solid var(--border-muted); position: relative; }
+.sidebar-search svg { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-faint); pointer-events:none; }
+.sidebar-search input { width: 100%; padding-left: 26px; }
+
+.breadcrumbs {
+  padding: 6px 12px; font-size: 12px; color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-muted);
+  white-space: nowrap; overflow-x: auto; scrollbar-width: none;
+  display: flex; align-items: center; gap: 2px;
+}
+.breadcrumbs::-webkit-scrollbar { display: none; }
+.breadcrumbs a { color: var(--text-secondary); }
+.breadcrumbs a:hover { color: var(--accent-blue); }
+.breadcrumbs .sep { color: var(--text-faint); margin: 0 2px; }
+.breadcrumbs .current { color: var(--text-primary); font-weight: 500; }
+
+.sidebar-body { flex-grow: 1; overflow-y: auto; padding: 6px; }
+#fileTree { list-style: none; margin: 0; padding: 0; }
+#fileTree li {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 8px; border-radius: var(--radius-sm);
+  font-size: 13px; cursor: pointer; color: var(--text-primary);
+  transition: background-color .1s ease;
+}
+#fileTree li:hover { background: var(--surface-hover); }
+#fileTree li.active-file { background: rgba(88,166,255,0.15); color: var(--accent-blue); }
+#fileTree li svg.file-icon { flex-shrink: 0; }
+#fileTree li.up-dir { color: var(--text-secondary); font-style: italic; }
+#fileTree li .fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#fileTree li mark { background: rgba(210,153,34,0.4); color: inherit; border-radius: 2px; }
+
+.icon-folder { color: var(--accent-blue); }
+.icon-html { color: #e34c26; }
+.icon-css { color: #563d7c; }
+.icon-js { color: #f1e05a; }
+.icon-py { color: #3572A5; }
+.icon-java { color: #b07219; }
+.icon-c { color: #555; }
+.icon-json { color: var(--accent-orange); }
+.icon-md { color: var(--text-secondary); }
+.icon-img { color: var(--accent-purple); }
+.icon-default { color: var(--text-faint); }
+
+.skeleton-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; }
+.skeleton-bar {
+  height: 12px; border-radius: 4px; flex-grow: 1;
+  background: linear-gradient(90deg, var(--surface-hover) 25%, var(--surface-raised) 37%, var(--surface-hover) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+.empty-state, .error-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 8px; padding: 30px 16px; color: var(--text-secondary);
+  height: 100%; flex-grow: 1;
+}
+.empty-state svg, .error-state svg { width: 34px; height: 34px; color: var(--text-faint); stroke-width: 1.3; }
+.error-state svg { color: var(--accent-red); }
+.empty-state .title, .error-state .title { font-weight: 600; color: var(--text-primary); font-size: 13.5px; }
+.empty-state .desc, .error-state .desc { font-size: 12.5px; max-width: 220px; }
+
+/* ---------- EDITOR ---------- */
+#editor-panel .panel-header { padding: 0; min-height: 42px; }
+.editor-tab-bar { display: flex; align-items: center; flex-grow: 1; min-width: 0; overflow: hidden; }
+.editor-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 14px; font-size: 12.5px; font-weight: 500;
+  border-right: 1px solid var(--border-muted);
+  background: var(--surface); color: var(--text-secondary);
+  min-width: 0; max-width: 220px;
+}
+.editor-tab.has-file { background: var(--canvas); color: var(--text-primary); border-bottom: 2px solid var(--accent-blue); margin-bottom: -1px; }
+.editor-tab .fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.editor-tab .dirty-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-orange); display: none; flex-shrink:0; }
+.editor-tab.dirty .dirty-dot { display: block; }
+.editor-toolbar { display: flex; align-items: center; gap: 4px; padding: 0 8px; flex-shrink: 0; }
+.editor-toolbar .divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.font-size-group { display: flex; align-items: center; gap: 2px; background: var(--canvas-inset); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 2px; }
+.font-size-group span { font-size: 11px; color: var(--text-secondary); width: 24px; text-align: center; }
+
+#editor-content-area { flex-grow: 1; position: relative; display: flex; overflow: hidden; background: var(--canvas); }
+.CodeMirror { height: 100%; width: 100%; font-family: var(--font-mono); }
+html[data-theme="light"] .CodeMirror { background: #ffffff; }
+
+.CodeMirror-activeline-background { background: rgba(88,166,255,0.08) !important; }
+.CodeMirror-activeline-gutter { background: rgba(88,166,255,0.06) !important; }
+
+#rawCodeView { display: none; flex-grow: 1; overflow: auto; margin: 0; padding: 14px 16px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; }
+#rawImageContent { display: none; max-width: 100%; max-height: 100%; object-fit: contain; margin: auto; background: repeating-conic-gradient(#80808022 0% 25%, transparent 0% 50%) 50% / 20px 20px; }
+#codeEditorTextarea { display: none; }
+
+/* ---------- OUTPUT / PREVIEW ---------- */
+.browser-toolbar {
+  display: flex; align-items: center; gap: 6px; padding: 8px 10px;
+  border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0;
+}
+.browser-toolbar .addr-bar {
+  flex-grow: 1; display: flex; align-items: center; gap: 6px;
+  background: var(--canvas-inset); border: 1px solid var(--border);
+  border-radius: 16px; padding: 5px 12px; font-size: 12px; color: var(--text-secondary);
+  min-width: 0;
+}
+.browser-toolbar .addr-bar svg { flex-shrink: 0; color: var(--text-faint); }
+.browser-toolbar .addr-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.browser-toolbar .addr-bar.secure svg { color: var(--accent-green); }
+
+#output-content-area { flex-grow: 1; position: relative; overflow: hidden; background: #fff; }
+html[data-theme="dark"] #output-content-area.no-preview { background: var(--canvas); }
+#hostedSiteFrame { width: 100%; height: 100%; border: none; display: none; background: #fff; }
+#terminalOutput { display: none; height: 100%; overflow: auto; background: var(--canvas-inset); }
+.terminal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; border-bottom: 1px solid var(--border-muted); font-size: 12px;
+}
+.terminal-status { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.terminal-status .stat { display: flex; align-items: center; gap: 5px; color: var(--text-secondary); }
+.terminal-status .stat.ok svg { color: var(--accent-green); }
+.terminal-status .stat.fail svg { color: var(--accent-red); }
+#judge0Console {
+  margin: 0; padding: 14px 16px; font-family: var(--font-mono); font-size: 12.5px;
+  line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; color: var(--text-primary);
+}
+#judge0Console .err-line { color: var(--accent-red); }
+#judge0Console .out-line { color: var(--text-primary); }
+#judge0Console .label { color: var(--text-faint); }
+
+/* ============================================================
+   FULLSCREEN OVERLAYS
+   ============================================================ */
+.fullscreen-overlay {
+  position: fixed; inset: 0; z-index: 2500;
+  background: rgba(1,4,9,0.7); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s ease;
+}
+.fullscreen-overlay.visible { opacity: 1; pointer-events: auto; }
+.fullscreen-overlay .panel { width: 96vw; height: 94vh; box-shadow: var(--shadow-lg); transform: scale(.97); transition: transform .2s ease; }
+.fullscreen-overlay.visible .panel { transform: scale(1); }
+
+/* ============================================================
+   SETTINGS POPOVER
+   ============================================================ */
+.popover {
+  position: absolute; top: 44px; right: 12px; z-index: 400;
+  background: var(--surface-raised); border: 1px solid var(--border);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+  width: 280px; padding: 14px; display: none;
+}
+.popover.open { display: block; }
+.popover h4 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-secondary); }
+.popover .field { margin-bottom: 12px; }
+.popover label { display: block; font-size: 12.5px; margin-bottom: 5px; color: var(--text-primary); }
+.popover .hint { font-size: 11px; color: var(--text-faint); margin-top: 4px; line-height: 1.4; }
+.popover input[type="text"], .popover input[type="password"] { width: 100%; }
+
+/* ============================================================
+   TOOLTIP (title attribute enhancement via CSS)
+   ============================================================ */
+[data-tip] { position: relative; }
+
+/* ============================================================
+   MOBILE TAB BAR
+   ============================================================ */
+#mobile-tabbar { display: none; }
+@media (max-width: 860px) {
+  #app-shell { padding: 0; gap: 0; }
+  .resizer { display: none; }
+  .panel { border-radius: 0; border-left: none; border-right: none; border-bottom: none; }
+  #sidebar-panel, #editor-panel, #output-panel { flex-basis: 100% !important; flex-grow: 0 !important; display: none; }
+  #app-shell.tab-files #sidebar-panel,
+  #app-shell.tab-editor #editor-panel,
+  #app-shell.tab-preview #output-panel { display: flex; }
+  #sidebar-panel.collapsed { flex-basis: 100% !important; }
+  .nav-search { display: none !important; }
+  .repo-form #branchSelect { max-width: 80px; }
+  #mobile-tabbar {
+    display: flex; flex-shrink: 0; border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  #mobile-tabbar button {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 8px 0; background: transparent; border: none; color: var(--text-secondary);
+    font-size: 10.5px; border-radius: 0; cursor: pointer;
+  }
+  #mobile-tabbar button.active { color: var(--accent-blue); }
+  .toast-stack, #toast-stack { left: 12px; right: 12px; top: 8px; }
+}
+
+@media (max-width: 600px) {
+  .brand span.tag { display: none; }
+  #repoUrlInput { min-width: 60px; }
+}
+</style>
 </head>
 <body>
-    <div id="background-container"><div class="stars"></div><div class="stars2"></div></div>
 
-    <div id="header-bar">
-        <div class="logo">Void-IDE</div>
-        <div class="repo-input-group-gh">
-            <input type="text" id="repoUrlGH" placeholder="owner/repo">
-            <input type="text" id="branchNameGH" placeholder="branch">
-            <button id="loadSiteBtnGH">Load</button>
+<!-- ================= TOP NAVIGATION ================= -->
+<header id="top-nav">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9.5 3 4 12l5.5 9M14.5 3 20 12l-5.5 9"/></svg>
+    Void IDE <span class="tag">repo browser</span>
+  </div>
+
+  <div class="repo-form" role="search">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15.5 15.5 21 21M10 17a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"/></svg>
+    <input type="text" id="repoUrlInput" placeholder="owner/repo or https://github.com/owner/repo" aria-label="GitHub repository">
+    <div class="divider"></div>
+    <select id="branchSelect" class="select" aria-label="Branch"><option value="">branch</option></select>
+    <button class="btn primary sm" id="loadRepoBtn" data-tip="Load repository" title="Load repository">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 12h16M12 4v16"/></svg>
+      Load
+    </button>
+  </div>
+
+  <div class="nav-search">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15.5 15.5 21 21M10 17a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"/></svg>
+    <input type="search" id="fileSearchInput" placeholder="Filter files…" aria-label="Filter files in current folder">
+  </div>
+
+  <div id="loadingIndicator"><div class="spinner"></div><span>Loading…</span></div>
+
+  <div class="nav-right">
+    <button class="btn icon-only ghost" id="repoLinkBtn" title="Open repository on GitHub" data-tip="Open on GitHub" aria-label="Open repository on GitHub" disabled>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14 21 3"/></svg>
+    </button>
+    <button class="btn icon-only ghost" id="themeToggleBtn" title="Toggle theme" data-tip="Toggle theme" aria-label="Toggle light/dark theme">
+      <svg class="icon" id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <div style="position:relative;">
+      <button class="btn icon-only ghost" id="settingsBtn" title="Settings" data-tip="Settings" aria-label="Settings" aria-haspopup="true">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.36.4.68.75.9.32.2.7.3 1.09.3H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+      </button>
+      <div class="popover" id="settingsPopover">
+        <h4>Settings</h4>
+        <div class="field">
+          <label for="ghTokenInput">GitHub personal access token (optional)</label>
+          <input type="password" id="ghTokenInput" placeholder="ghp_••••••••••••">
+          <div class="hint">Stored only in memory for this session. Raises the API rate limit from 60 to 5,000 requests/hour. Never sent anywhere except api.github.com.</div>
         </div>
-        <div id="loadingIndicatorGH" style="display:none; margin: 0 10px;">Loading...</div>
-        <div id="errorDisplayGH" class="error-message-gh" style="display:none; padding: 5px 10px; margin: 0 10px;"></div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Execution engine</label>
+          <div class="hint">Code runs through a Judge0 endpoint. The API key is expected to be supplied by a secure backend proxy — this page never hard-codes a real key.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div id="toast-stack" aria-live="polite"></div>
+
+<!-- ================= APP SHELL ================= -->
+<main id="app-shell" class="tab-files">
+
+  <!-- SIDEBAR -->
+  <section id="sidebar-panel" class="panel" aria-label="File explorer">
+    <div class="panel-header">
+      <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>Explorer</h3>
+      <div class="header-actions">
+        <button class="btn icon-only ghost sm" id="collapseSidebarBtn" title="Collapse sidebar" data-tip="Collapse" aria-label="Collapse sidebar">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+      </div>
     </div>
 
-    <div id="app-container">
-        <!-- Left Panel: File Tree -->
-        <div id="sidebar" class="panel"><div class="panel-header"><h3><span id="repoNameDisplayGH">File Explorer</span></h3></div><div class="breadcrumbs" id="breadcrumbsGH"></div><div class="panel-content" id="fileTreeGH"></div></div>
-        <div class="resizer" id="resizer-fs"></div>
-        <!-- Center Panel: Editor -->
-        <div id="editor-pane" class="panel"><div class="panel-header" id="editor-header"><h3><span id="fileNameDisplayGH"></span></h3>
-            <div class="actions" style="display: flex; align-items: center; gap: 8px;">
-                <button id="editFileBtnGH" style="display:none;">Edit</button>
-                <button id="cancelEditBtnGH" style="display:none;">Cancel</button>
-                <button id="runCodeBtnGH" style="display:none;" class="primary-action">Run</button>
-                <button id="saveFileLocalBtnGH" style="display:none;">Download</button>
-                <button id="maximizeEditorBtn" title="Maximize Editor">↗</button>
-            </div>
-        </div>
-        <div class="panel-content" id="editor-content-area">
-            <div id="editorPlaceholder" style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary); font-style: italic;">Select a file to view its content.</div>
-            <pre id="rawCodeViewGH" style="display:none; flex-grow: 1; overflow: auto; padding: 0.5em;"><code class="hljs"></code></pre>
-            <textarea id="codeEditorTextareaGH" style="display:none;"></textarea>
-            <img id="rawImageContentGH" src="#" alt="Image content" style="display:none; max-width: 100%; max-height: 100%; object-fit: contain; margin: auto;">
-        </div>
-        </div>
-        <div class="resizer" id="resizer-eo"></div>
-        <!-- Right Panel: Output/Preview -->
-        <div id="output-pane" class="panel">
-            <div class="panel-header">
-                <h3>Output / Preview</h3>
-                <button id="maximizeOutputBtn" title="Maximize Output">↗</button>
-            </div>
-            <div class="panel-content">
-                <div id="iframeStatusGH" style="padding: 15px;">Awaiting file selection...</div>
-                <iframe id="hostedSiteFrameGH" sandbox="allow-scripts allow-forms allow-popups allow-modals allow-top-navigation allow-same-origin" style="display:none;"></iframe>
-                <div id="judge0OutputContainerGH" style="display:none; height: 100%;">
-                    <pre id="judge0OutputConsoleGH" style="height: 100%; margin: 0; white-space: pre-wrap; word-wrap: break-word;"></pre>
-                </div>
-            </div>
-        </div>
+    <div class="repo-meta" id="repoMeta" style="display:none;">
+      <div class="repo-name"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg><span id="repoNameDisplay">No repository loaded</span></div>
+      <div class="repo-stats">
+        <span id="repoBranchStat"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13"><path d="M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 9a9 9 0 0 1-9 9"/></svg>—</span>
+        <span id="repoFileStat"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>—</span>
+      </div>
+      <a href="#" target="_blank" rel="noopener" class="gh-link" id="repoGhLink">
+        <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14 21 3"/></svg>
+        View on GitHub
+      </a>
     </div>
 
-    <!-- Fullscreen Editor Overlay Structure -->
-    <div id="fullscreen-editor-overlay">
-        <div id="fullscreen-editor-container" class="panel">
-            <div class="panel-header">
-                <h3><span id="fullscreen-editor-filename"></span></h3>
-                <button id="minimize-editor-btn" title="Minimize Editor (Esc)">↘</button>
-            </div>
-            <div id="fullscreen-editor-content" class="panel-content">
-                <!-- CodeMirror will be moved here -->
-            </div>
-        </div>
+    <div class="sidebar-search">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15.5 15.5 21 21M10 17a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"/></svg>
+      <input type="search" id="sidebarSearchInput" placeholder="Filter files in this folder…" aria-label="Filter files">
     </div>
 
-    <!-- JS Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <div class="breadcrumbs" id="breadcrumbs"><span class="current">—</span></div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const editorContentArea = document.getElementById('editor-content-area');
-            const maximizeEditorBtn = document.getElementById('maximizeEditorBtn');
-            const fullscreenEditorOverlay = document.getElementById('fullscreen-editor-overlay');
-            const fullscreenEditorContent = document.getElementById('fullscreen-editor-content');
-            const fullscreenEditorFilename = document.getElementById('fullscreen-editor-filename');
-            const minimizeEditorBtn = document.getElementById('minimize-editor-btn');
-            const repoUrlInputGH = document.getElementById('repoUrlGH');
-            const branchNameInputGH = document.getElementById('branchNameGH');
-            const loadSiteBtnGH = document.getElementById('loadSiteBtnGH');
-            const fileTreeUlGH = document.getElementById('fileTreeGH');
-            const breadcrumbsDivGH = document.getElementById('breadcrumbsGH');
-            const errorDisplayGH = document.getElementById('errorDisplayGH');
-            const loadingIndicatorGH = document.getElementById('loadingIndicatorGH');
-            const hostedSiteFrameGH = document.getElementById('hostedSiteFrameGH');
-            const iframeStatusGH = document.getElementById('iframeStatusGH');
-            const repoNameDisplayGH = document.getElementById('repoNameDisplayGH');
-            const fileNameDisplayGH = document.getElementById('fileNameDisplayGH');
-            const editorPlaceholder = document.getElementById('editorPlaceholder');
-            const rawCodeViewGH = document.getElementById('rawCodeViewGH');
-            const rawImageContentGH = document.getElementById('rawImageContentGH');
-            const codeEditorTextareaGH = document.getElementById('codeEditorTextareaGH');
-            let cmInstanceGH = null;
-            const editFileBtnGH = document.getElementById('editFileBtnGH');
-            const cancelEditBtnGH = document.getElementById('cancelEditBtnGH');
-            const runCodeBtnGH = document.getElementById('runCodeBtnGH');
-            const saveFileLocalBtnGH = document.getElementById('saveFileLocalBtnGH');
-            const judge0OutputContainerGH = document.getElementById('judge0OutputContainerGH');
-            const judge0OutputConsoleGH = document.getElementById('judge0OutputConsoleGH');
-            const maximizeOutputBtn = document.getElementById('maximizeOutputBtn');
+    <div class="sidebar-body" id="sidebarBody">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg>
+        <div class="title">No repository loaded</div>
+        <div class="desc">Enter <code>owner/repo</code> or a GitHub URL above and click Load.</div>
+      </div>
+    </div>
+  </section>
 
-            function makeResizable(resizer) { let prevSibling, nextSibling; let isResizing = false; resizer.addEventListener('mousedown', (e) => { isResizing = true; prevSibling = resizer.previousElementSibling; nextSibling = resizer.nextElementSibling; e.preventDefault(); document.addEventListener('mousemove', handleMouseMove); document.addEventListener('mouseup', handleMouseUp); }); function handleMouseMove(e) { if (!isResizing) return; const containerRect = resizer.parentElement.getBoundingClientRect(); const prevSiblingRect = prevSibling.getBoundingClientRect(); const newPrevWidth = e.clientX - prevSiblingRect.left; const newNextWidth = containerRect.right - e.clientX; if (newPrevWidth > 200 && newNextWidth > 200) { const totalFlex = parseFloat(getComputedStyle(prevSibling).flexBasis) + parseFloat(getComputedStyle(nextSibling).flexBasis); const newPrevFlex = (newPrevWidth / (newPrevWidth + newNextWidth)) * totalFlex; const newNextFlex = (newNextWidth / (newPrevWidth + newNextWidth)) * totalFlex; prevSibling.style.flexBasis = `${newPrevFlex}%`; nextSibling.style.flexBasis = `${newNextFlex}%`; } if (cmInstanceGH) cmInstanceGH.refresh(); } function handleMouseUp() { isResizing = false; document.removeEventListener('mousemove', handleMouseMove); document.removeEventListener('mouseup', handleMouseUp); } }
-            document.querySelectorAll('.resizer').forEach(makeResizable);
-            
-            maximizeOutputBtn.addEventListener('click', () => { 
-                document.body.classList.toggle('output-fullscreen-mode'); 
-                const isCurrentlyFullscreen = document.body.classList.contains('output-fullscreen-mode');
-                maximizeOutputBtn.innerHTML = isCurrentlyFullscreen ? '↘' : '↗'; 
-                maximizeOutputBtn.title = isCurrentlyFullscreen ? 'Minimize Output' : 'Maximize Output'; 
-            });
-            
-            function showFullscreenEditor() { if (!cmInstanceGH) return; fullscreenEditorFilename.textContent = fileNameDisplayGH.textContent; fullscreenEditorContent.appendChild(cmInstanceGH.getWrapperElement()); fullscreenEditorOverlay.classList.add('visible'); setTimeout(() => { cmInstanceGH.refresh(); cmInstanceGH.focus(); }, 100); }
-            function hideFullscreenEditor() { editorContentArea.appendChild(cmInstanceGH.getWrapperElement()); fullscreenEditorOverlay.classList.remove('visible'); setTimeout(() => { cmInstanceGH.refresh(); }, 300); }
-            maximizeEditorBtn.addEventListener('click', showFullscreenEditor);
-            minimizeEditorBtn.addEventListener('click', hideFullscreenEditor);
-            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && fullscreenEditorOverlay.classList.contains('visible')) { hideFullscreenEditor(); } });
+  <div class="resizer" id="resizerFS"></div>
 
-            const GITHUB_API_BASE = 'https://api.github.com';
-            const DEFAULT_INDEX_FILES = ['index.html', 'index.htm'];
-            const RAPIDAPI_KEY = "YOUR_RAPIDAPI_KEY";
-            const RAPIDAPI_HOST_JUDGE0 = "judge0-ce.p.rapidapi.com";
-            const COMPILER_API_ENDPOINT = `https://${RAPIDAPI_HOST_JUDGE0}/submissions?base64_encoded=false&wait=true`;
-            const judge0LanguageIdMap = { py: 92, java: 91, c: 75, cpp: 76, cs: 86, js: 93, php: 68, rb: 72, go: 95, kt: 78, swift: 83, sql: 82, sh: 73 };
-            let currentOwner = '', currentRepo = '', currentBranch = '', currentFilePath = '', currentFileSha = '';
-            let currentFileIsBinary = false, originalFileContentForEdit = '';
-            
-            async function apiFetchGH(apiUrl, options = {}) { 
-                loadingIndicatorGH.style.display = 'inline'; 
-                errorDisplayGH.style.display = 'none'; 
-                const headers = { 'Accept': 'application/vnd.github.v3+json', ...options.headers }; 
-                try { 
-                    const response = await fetch(apiUrl, { ...options, headers }); 
-                    if (!response.ok) { 
-                        let errorMsg = `API Error ${response.status}`; 
-                        try { const errData = await response.json(); errorMsg += `: ${errData.message}`; } catch(e){} 
-                        throw new Error(errorMsg); 
-                    } 
-                    return await response.json(); 
-                } catch (error) { 
-                    showErrorGH(error.message); 
-                    return null; 
-                } finally { 
-                    loadingIndicatorGH.style.display = 'none'; 
-                } 
-            }
-            
-            function setEditorContent(contentElement) { editorPlaceholder.style.display = 'none'; rawCodeViewGH.style.display = 'none'; rawImageContentGH.style.display = 'none'; if (cmInstanceGH) cmInstanceGH.getWrapperElement().style.display = 'none'; contentElement.style.display = contentElement === rawImageContentGH ? 'block' : 'flex'; }
-            
-            async function displayFileContent(fileItem) { 
-                if (!fileItem) return; 
-                currentFilePath = fileItem.path; 
-                currentFileSha = fileItem.sha; 
-                fileNameDisplayGH.textContent = fileItem.name; 
-                editFileBtnGH.style.display = 'none'; 
-                cancelEditBtnGH.style.display = 'none'; 
-                runCodeBtnGH.style.display = 'none'; 
-                saveFileLocalBtnGH.style.display = 'none'; 
-                currentFileIsBinary = /\.(gif|jpe?g|tiff?|png|webp|bmp|svg|ico|pdf|zip)$/i.test(fileItem.name); 
-                
-                const fileData = (fileItem.content !== undefined) ? fileItem : await apiFetchGH(`${GITHUB_API_BASE}/repos/${currentOwner}/${currentRepo}/contents/${fileItem.path}?ref=${currentBranch}`); 
-                if (!fileData) return showErrorGH("Failed to fetch file content."); 
-                
-                if (/\.(gif|jpe?g|png|webp|svg)$/i.test(fileData.name)) { 
-                    rawImageContentGH.src = fileData.download_url; 
-                    setEditorContent(rawImageContentGH); 
-                } else if (currentFileIsBinary) { 
-                    editorPlaceholder.textContent = `Cannot display binary file: ${fileData.name}`; 
-                    setEditorContent(editorPlaceholder); 
-                } else { 
-                    originalFileContentForEdit = (fileData.content) ? atob(fileData.content) : "(Empty file)"; 
-                    const codeElement = rawCodeViewGH.querySelector('code'); 
-                    codeElement.textContent = originalFileContentForEdit; 
-                    const langExt = fileData.name.split('.').pop().toLowerCase(); 
-                    codeElement.className = `hljs language-${langExt}`; 
-                    hljs.highlightElement(codeElement); 
-                    setEditorContent(rawCodeViewGH); 
-                    editFileBtnGH.style.display = 'inline-block'; 
-                    const fileExtRun = fileData.name.split('.').pop().toLowerCase(); 
-                    if (DEFAULT_INDEX_FILES.includes(fileData.name.toLowerCase())) { 
-                        runCodeBtnGH.style.display = 'inline-block'; 
-                        runCodeBtnGH.textContent = "Run Web Code";
-                    } else if (judge0LanguageIdMap[fileExtRun]) { 
-                        runCodeBtnGH.style.display = 'inline-block'; 
-                        runCodeBtnGH.textContent = `Run ${fileExtRun.toUpperCase()}`;
-                    } 
-                } 
-                highlightFileInTreeGH(fileData.path); 
-            }
-            
-            editFileBtnGH.addEventListener('click', () => { 
-                if (!cmInstanceGH) { 
-                    cmInstanceGH = CodeMirror.fromTextArea(codeEditorTextareaGH, { 
-                        theme: 'material-darker', 
-                        lineNumbers: true, 
-                        autoCloseBrackets: true, 
-                        matchBrackets: true, 
-                        styleActiveLine: true 
-                    }); 
-                } 
-                const lang = currentFilePath.split('.').pop().toLowerCase(); 
-                const modeMap = { js:'javascript', json:'javascript', html:'htmlmixed', css:'css', py:'python', java:'text/x-java', c:'text/x-csrc', cpp:'text/x-c++src' }; 
-                cmInstanceGH.setOption("mode", modeMap[lang] || 'plaintext'); 
-                cmInstanceGH.setValue(originalFileContentForEdit); 
-                setEditorContent(cmInstanceGH.getWrapperElement()); 
-                cmInstanceGH.refresh(); 
-                cmInstanceGH.focus(); 
-                editFileBtnGH.style.display = 'none'; 
-                cancelEditBtnGH.style.display = 'inline-block'; 
-                saveFileLocalBtnGH.style.display = 'inline-block'; 
-            });
+  <!-- EDITOR -->
+  <section id="editor-panel" class="panel" aria-label="Code editor">
+    <div class="panel-header">
+      <div class="editor-tab-bar">
+        <div class="editor-tab" id="editorTab"><span class="dirty-dot"></span><span class="fname" id="fileNameDisplay">No file selected</span></div>
+      </div>
+      <div class="editor-toolbar">
+        <button class="btn icon-only ghost sm" id="wordWrapBtn" title="Toggle word wrap" data-tip="Word wrap" aria-label="Toggle word wrap" disabled>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M3 12h13a3 3 0 1 1 0 6h-4l2-2m-2 2 2 2M3 18h6"/></svg>
+        </button>
+        <div class="font-size-group">
+          <button class="btn icon-only ghost sm" id="fontDecBtn" title="Decrease font size" aria-label="Decrease font size" disabled>–</button>
+          <span id="fontSizeLabel">13</span>
+          <button class="btn icon-only ghost sm" id="fontIncBtn" title="Increase font size" aria-label="Increase font size" disabled>+</button>
+        </div>
+        <div class="divider"></div>
+        <button class="btn ghost sm" id="formatBtn" title="Prettify (JSON supported)" data-tip="Format" disabled>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4M15 21h4a2 2 0 0 0 2-2v-4"/></svg>
+          Format
+        </button>
+        <button class="btn ghost sm" id="editFileBtn" title="Edit file" style="display:none;">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4Z"/></svg>
+          Edit
+        </button>
+        <button class="btn ghost sm" id="cancelEditBtn" title="Cancel changes" style="display:none;">Cancel</button>
+        <button class="btn ghost sm" id="runCodeBtn" title="Run code" style="display:none;">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 3v18l15-9L5 3Z"/></svg>
+          Run
+        </button>
+        <button class="btn ghost sm" id="saveFileLocalBtn" title="Download file" style="display:none;">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        </button>
+        <div class="divider"></div>
+        <button class="btn icon-only ghost sm" id="maximizeEditorBtn" title="Fullscreen editor" data-tip="Fullscreen" aria-label="Fullscreen editor">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m11-5v3a2 2 0 0 1-2 2h-3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="editor-content-area">
+      <div class="empty-state" id="editorPlaceholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M10 12l-2 2 2 2M14 12l2 2-2 2"/></svg>
+        <div class="title">No file selected</div>
+        <div class="desc">Choose a file from the explorer to view its contents here.</div>
+      </div>
+      <pre id="rawCodeView"><code class="hljs"></code></pre>
+      <textarea id="codeEditorTextarea"></textarea>
+      <img id="rawImageContent" src="" alt="">
+    </div>
+  </section>
 
-            cancelEditBtnGH.addEventListener('click', () => { setEditorContent(rawCodeViewGH); editFileBtnGH.style.display = 'inline-block'; cancelEditBtnGH.style.display = 'none'; saveFileLocalBtnGH.style.display = 'none'; });
-            saveFileLocalBtnGH.addEventListener('click', () => { if (!cmInstanceGH) return; const blob = new Blob([cmInstanceGH.getValue()], {type: 'text/plain;charset=utf-8'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fileNameDisplayGH.textContent; a.click(); URL.revokeObjectURL(a.href); });
-            
-            async function fetchAndProcessPathGH(owner, repo, branch, path) { currentOwner = owner; currentRepo = repo; currentBranch = branch; repoNameDisplayGH.textContent = `${owner}/${repo}`; updateHash(); const contentData = await apiFetchGH(`${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${path}?ref=${branch}`); if (!contentData) return; if (Array.isArray(contentData)) { renderFileTreeGH(contentData, path); renderBreadcrumbsGH(path); const indexFile = contentData.find(item => DEFAULT_INDEX_FILES.includes(item.name.toLowerCase())); if (indexFile) { await displayFileContent(indexFile); hostHtmlFileFromGitHub(indexFile.path); } } else if (contentData.type === 'file') { renderBreadcrumbsGH(path); await displayFileContent(contentData); if (isHtmlFileGH(contentData.name)) { hostHtmlFileFromGitHub(contentData.path); } } }
-            function renderFileTreeGH(items, basePath) { fileTreeUlGH.innerHTML = ''; items.sort((a,b) => (a.type === b.type) ? a.name.localeCompare(b.name) : (a.type === 'dir' ? -1 : 1)); if (basePath) { const parentPath = basePath.substring(0, basePath.lastIndexOf('/')) || ''; const upLi = document.createElement('li'); upLi.innerHTML = `.. (Up)`; upLi.addEventListener('click', () => fetchAndProcessPathGH(currentOwner, currentRepo, currentBranch, parentPath)); fileTreeUlGH.appendChild(upLi); } items.forEach(item => { const li = document.createElement('li'); li.innerHTML = item.name; li.dataset.path = item.path; li.addEventListener('click', () => fetchAndProcessPathGH(currentOwner, currentRepo, currentBranch, item.path)); fileTreeUlGH.appendChild(li); }); }
-            function highlightFileInTreeGH(filePath) { fileTreeUlGH.querySelectorAll('li').forEach(li => li.classList.toggle('active-file', li.dataset.path === filePath)); }
-            function renderBreadcrumbsGH(path) { breadcrumbsDivGH.innerHTML = ''; const parts = path.split('/').filter(Boolean); let currentPath = ''; parts.forEach((part, i) => { const a = document.createElement('a'); a.href = '#'; a.textContent = part; const pathOnClick = parts.slice(0, i + 1).join('/'); a.addEventListener('click', (e) => { e.preventDefault(); fetchAndProcessPathGH(currentOwner, currentRepo, currentBranch, pathOnClick); }); breadcrumbsDivGH.appendChild(a); breadcrumbsDivGH.append(' / '); });}
-            function hostHtmlFileFromGitHub(filePath) { iframeStatusGH.style.display = 'none'; hostedSiteFrameGH.style.display = 'block'; hostedSiteFrameGH.src = `https://raw.githack.com/${currentOwner}/${currentRepo}/${currentBranch}/${filePath}`; }
-            function isHtmlFileGH(fileName) { return fileName ? DEFAULT_INDEX_FILES.includes(fileName.toLowerCase()) : false; }
-            
-            runCodeBtnGH.addEventListener('click', () => { const codeToRun = cmInstanceGH && cmInstanceGH.getWrapperElement().style.display !== 'none' ? cmInstanceGH.getValue() : originalFileContentForEdit; const fileExt = currentFilePath.split('.').pop().toLowerCase(); if (DEFAULT_INDEX_FILES.includes(currentFilePath.split('/').pop().toLowerCase())) { iframeStatusGH.style.display = 'none'; hostedSiteFrameGH.style.display = 'block'; hostedSiteFrameGH.srcdoc = codeToRun; } else if (judge0LanguageIdMap[fileExt]) { executeWithJudge0GH(codeToRun, judge0LanguageIdMap[fileExt]); } });
-            async function executeWithJudge0GH(sourceCode, languageId) { judge0OutputContainerGH.style.display = 'block'; judge0OutputConsoleGH.textContent = 'Executing...'; hostedSiteFrameGH.style.display = 'none'; iframeStatusGH.style.display = 'none'; try { const response = await fetch(COMPILER_API_ENDPOINT, { method: 'POST', headers: { 'content-type': 'application/json', 'X-RapidAPI-Key': RAPIDAPI_KEY, 'X-RapidAPI-Host': RAPIDAPI_HOST_JUDGE0 }, body: JSON.stringify({ language_id: languageId, source_code: sourceCode }) }); const result = await response.json(); let outputText = `Status: ${result.status?.description}\nTime: ${result.time}s\n\n`; outputText += result.stdout ? `--- OUTPUT ---\n${result.stdout}` : ''; outputText += result.stderr ? `--- ERROR ---\n${result.stderr}` : ''; judge0OutputConsoleGH.textContent = outputText; } catch(e) { showErrorGH("Failed to connect to execution API."); } }
-            function showSuccessGH(message) { errorDisplayGH.textContent = message; errorDisplayGH.style.color = 'var(--accent-color)'; errorDisplayGH.style.display = 'inline'; setTimeout(() => { errorDisplayGH.style.display = 'none'; errorDisplayGH.style.color = 'var(--error-color)'; }, 4000); }
-            function showErrorGH(message) { errorDisplayGH.textContent = message; errorDisplayGH.style.color = 'var(--error-color)'; errorDisplayGH.style.display = 'inline'; setTimeout(() => errorDisplayGH.style.display = 'none', 5000); }
-            function updateHash() { if (currentOwner) location.hash = `${currentOwner}/${currentRepo}/${currentBranch}/${currentFilePath || ''}`; }
-            
-            function loadFromHash() { const hash = location.hash.substring(1); if (!hash) return; const [owner, repo, branch, ...pathParts] = hash.split('/'); if (owner && repo && branch) { repoUrlInputGH.value = `${owner}/${repo}`; branchNameInputGH.value = branch; fetchAndProcessPathGH(owner, repo, branch, pathParts.join('/')); } }
-            loadSiteBtnGH.addEventListener('click', () => { const [owner, repo] = repoUrlInputGH.value.split('/'); const branch = branchNameInputGH.value.trim() || 'main'; if (owner && repo) { fetchAndProcessPathGH(owner, repo, branch, ''); } else { showErrorGH("Invalid repo format. Use 'owner/repo'."); } });
-            
-            function initializeApp() {
-                if (location.hash) {
-                    loadFromHash();
-                }
-            }
-            initializeApp();
-        });
-    </script>
+  <div class="resizer" id="resizerEO"></div>
+
+  <!-- OUTPUT / PREVIEW -->
+  <section id="output-panel" class="panel" aria-label="Preview and output">
+    <div class="browser-toolbar">
+      <button class="btn icon-only ghost sm" id="navBackBtn" title="Back" aria-label="Back" disabled>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 12H5m6-7-7 7 7 7"/></svg>
+      </button>
+      <button class="btn icon-only ghost sm" id="navForwardBtn" title="Forward" aria-label="Forward" disabled>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14m-6-7 7 7-7 7"/></svg>
+      </button>
+      <button class="btn icon-only ghost sm" id="reloadPreviewBtn" title="Reload" aria-label="Reload preview">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg>
+      </button>
+      <div class="addr-bar" id="addrBar"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span id="addrBarText">No preview available</span></div>
+      <button class="btn icon-only ghost sm" id="openExternalBtn" title="Open in new tab" aria-label="Open in new tab" disabled>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14 21 3"/></svg>
+      </button>
+      <button class="btn icon-only ghost sm" id="clearOutputBtn" title="Clear output" aria-label="Clear output" style="display:none;">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+      </button>
+      <button class="btn icon-only ghost sm" id="maximizeOutputBtn" title="Fullscreen preview" data-tip="Fullscreen" aria-label="Fullscreen preview">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m11-5v3a2 2 0 0 1-2 2h-3"/></svg>
+      </button>
+    </div>
+    <div id="output-content-area" class="no-preview">
+      <div class="empty-state" id="outputEmptyState">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18M8 21h8"/></svg>
+        <div class="title">Awaiting file selection</div>
+        <div class="desc">Load an HTML file to preview it, or a source file to run it.</div>
+      </div>
+      <iframe id="hostedSiteFrame" title="Preview" sandbox="allow-scripts allow-forms allow-popups allow-modals allow-top-navigation-by-user-activation allow-same-origin"></iframe>
+      <div id="terminalOutput">
+        <div class="terminal-header">
+          <div class="terminal-status" id="terminalStatus"></div>
+        </div>
+        <pre id="judge0Console"></pre>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav id="mobile-tabbar">
+  <button class="tab-btn active" data-tab="files"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>Files</button>
+  <button class="tab-btn" data-tab="editor"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>Editor</button>
+  <button class="tab-btn" data-tab="preview"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18M8 21h8"/></svg>Preview</button>
+</nav>
+
+<!-- ================= FULLSCREEN EDITOR ================= -->
+<div id="fullscreenEditorOverlay" class="fullscreen-overlay">
+  <div class="panel">
+    <div class="panel-header">
+      <h3 id="fsEditorFilename">—</h3>
+      <button class="btn icon-only ghost sm" id="minimizeEditorBtn" title="Exit fullscreen (Esc)" aria-label="Exit fullscreen">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3m8-5h3a2 2 0 0 1 2 2v3"/></svg>
+      </button>
+    </div>
+    <div id="fullscreenEditorContent" style="flex-grow:1; overflow:hidden; display:flex;"></div>
+  </div>
+</div>
+
+<!-- ================= FULLSCREEN OUTPUT ================= -->
+<div id="fullscreenOutputOverlay" class="fullscreen-overlay">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Preview</h3>
+      <button class="btn icon-only ghost sm" id="minimizeOutputBtn" title="Exit fullscreen (Esc)" aria-label="Exit fullscreen">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3m8-5h3a2 2 0 0 1 2 2v3"/></svg>
+      </button>
+    </div>
+    <div id="fullscreenOutputContent" style="flex-grow:1; overflow:hidden; display:flex;"></div>
+  </div>
+</div>
+
+<!-- JS libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/searchcursor.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/search.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<script>
+lucide.createIcons();
+(function(){
+'use strict';
+
+/* ============================================================
+   CONSTANTS & STATE
+   ============================================================ */
+const GITHUB_API = 'https://api.github.com';
+const DEFAULT_INDEX_FILES = ['index.html', 'index.htm'];
+// Judge0 execution: in production the key below must be injected by a secure
+// backend proxy at request time. It is intentionally left blank here so no
+// real credential is ever hard-coded into frontend code.
+const RAPIDAPI_KEY = '';
+const RAPIDAPI_HOST_JUDGE0 = 'judge0-ce.p.rapidapi.com';
+const COMPILER_ENDPOINT = `https://${RAPIDAPI_HOST_JUDGE0}/submissions?base64_encoded=false&wait=true`;
+const JUDGE0_LANG_MAP = { py:92, java:91, c:75, cpp:76, cs:86, js:93, php:68, rb:72, go:95, kt:78, swift:83, sql:82, sh:73 };
+
+const ICONS = {
+  folder: ['icon-folder', '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/>'],
+  html: ['icon-html', '<path d="m9 9-3 3 3 3M15 9l3 3-3 3"/>'],
+  css: ['icon-css', '<path d="M4 3h16l-1.5 15L12 21l-6.5-3L4 3Z"/>'],
+  js: ['icon-js', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/>'],
+  py: ['icon-py', '<circle cx="12" cy="12" r="9"/><path d="M9 9h.01M15 15h.01"/>'],
+  java: ['icon-java', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/>'],
+  c: ['icon-c', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/>'],
+  json: ['icon-json', '<path d="M8 3a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1 2 2v4a2 2 0 0 0 2 2M16 3a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2"/>'],
+  md: ['icon-md', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 15v-4l2 2 2-2v4M17 11v4m-1.5-1.5L17 15l1.5-1.5"/>'],
+  img: ['icon-img', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>'],
+  file: ['icon-default', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/>'],
+};
+function iconFor(name, isDir) {
+  if (isDir) return ICONS.folder;
+  const ext = name.split('.').pop().toLowerCase();
+  if (['html','htm'].includes(ext)) return ICONS.html;
+  if (ext === 'css') return ICONS.css;
+  if (['js','jsx','ts','tsx'].includes(ext)) return ICONS.js;
+  if (ext === 'py') return ICONS.py;
+  if (ext === 'java') return ICONS.java;
+  if (['c','cpp','h','hpp'].includes(ext)) return ICONS.c;
+  if (ext === 'json') return ICONS.json;
+  if (ext === 'md') return ICONS.md;
+  if (['png','jpg','jpeg','gif','svg','webp','bmp','ico'].includes(ext)) return ICONS.img;
+  return ICONS.file;
+}
+function svgIcon(name, isDir) {
+  const [cls, path] = iconFor(name, isDir);
+  return `<svg class="icon file-icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">${path}</svg>`;
+}
+
+let currentOwner = '', currentRepo = '', currentBranch = '', currentFilePath = '';
+let currentFileIsBinary = false, originalFileContentForEdit = '';
+let cmInstance = null;
+let dirCache = new Map();          // "owner/repo/branch/path" -> contents array
+let repoFileCountCache = new Map(); // "owner/repo/branch" -> approx file count
+let ghToken = '';
+let wordWrapOn = false;
+let fontSize = 13;
+let navHistory = [];   // simple back/forward for preview
+let navIndex = -1;
+let lastRunWasWeb = false;
+
+/* ============================================================
+   DOM REFS
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+const repoUrlInput = $('repoUrlInput');
+const branchSelect = $('branchSelect');
+const loadRepoBtn = $('loadRepoBtn');
+const fileSearchInput = $('fileSearchInput');
+const sidebarSearchInput = $('sidebarSearchInput');
+const loadingIndicator = $('loadingIndicator');
+const repoLinkBtn = $('repoLinkBtn');
+const themeToggleBtn = $('themeToggleBtn');
+const themeIcon = $('themeIcon');
+const settingsBtn = $('settingsBtn');
+const settingsPopover = $('settingsPopover');
+const ghTokenInput = $('ghTokenInput');
+const sidebarBody = $('sidebarBody');
+const breadcrumbs = $('breadcrumbs');
+const repoMeta = $('repoMeta');
+const repoNameDisplay = $('repoNameDisplay');
+const repoBranchStat = $('repoBranchStat');
+const repoFileStat = $('repoFileStat');
+const repoGhLink = $('repoGhLink');
+const collapseSidebarBtn = $('collapseSidebarBtn');
+const sidebarPanel = $('sidebar-panel');
+const fileNameDisplay = $('fileNameDisplay');
+const editorTab = $('editorTab');
+const editorPlaceholder = $('editorPlaceholder');
+const rawCodeView = $('rawCodeView');
+const rawImageContent = $('rawImageContent');
+const codeEditorTextarea = $('codeEditorTextarea');
+const editFileBtn = $('editFileBtn');
+const cancelEditBtn = $('cancelEditBtn');
+const runCodeBtn = $('runCodeBtn');
+const saveFileLocalBtn = $('saveFileLocalBtn');
+const formatBtn = $('formatBtn');
+const wordWrapBtn = $('wordWrapBtn');
+const fontDecBtn = $('fontDecBtn');
+const fontIncBtn = $('fontIncBtn');
+const fontSizeLabel = $('fontSizeLabel');
+const editorContentArea = $('editor-content-area');
+const maximizeEditorBtn = $('maximizeEditorBtn');
+const fullscreenEditorOverlay = $('fullscreenEditorOverlay');
+const fullscreenEditorContent = $('fullscreenEditorContent');
+const fsEditorFilename = $('fsEditorFilename');
+const minimizeEditorBtn = $('minimizeEditorBtn');
+const outputContentArea = $('output-content-area');
+const outputEmptyState = $('outputEmptyState');
+const hostedSiteFrame = $('hostedSiteFrame');
+const terminalOutput = $('terminalOutput');
+const terminalStatus = $('terminalStatus');
+const judge0Console = $('judge0Console');
+const addrBarText = $('addrBarText');
+const addrBar = $('addrBar');
+const reloadPreviewBtn = $('reloadPreviewBtn');
+const openExternalBtn = $('openExternalBtn');
+const clearOutputBtn = $('clearOutputBtn');
+const navBackBtn = $('navBackBtn');
+const navForwardBtn = $('navForwardBtn');
+const maximizeOutputBtn = $('maximizeOutputBtn');
+const fullscreenOutputOverlay = $('fullscreenOutputOverlay');
+const fullscreenOutputContent = $('fullscreenOutputContent');
+const minimizeOutputBtn = $('minimizeOutputBtn');
+const fileTreeContainerId = 'fileTree';
+const appShell = $('app-shell');
+const toastStack = $('toast-stack');
+
+/* ============================================================
+   TOASTS
+   ============================================================ */
+function toast(message, type = 'info') {
+  const icons = {
+    success: '<path d="M20 6 9 17l-5-5"/>',
+    error: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>',
+    warning: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4m0 4h.01"/>',
+    info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/>'
+  };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${icons[type]||icons.info}</svg><span>${message}</span>`;
+  toastStack.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 4200);
+}
+
+/* ============================================================
+   THEME
+   ============================================================ */
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeIcon.innerHTML = theme === 'dark'
+    ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
+    : '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>';
+  if (cmInstance) cmInstance.setOption('theme', theme === 'dark' ? 'material-darker' : 'eclipse');
+}
+themeToggleBtn.addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+});
+applyTheme('dark');
+
+/* ============================================================
+   SETTINGS POPOVER
+   ============================================================ */
+settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); settingsPopover.classList.toggle('open'); });
+document.addEventListener('click', (e) => { if (!settingsPopover.contains(e.target) && e.target !== settingsBtn) settingsPopover.classList.remove('open'); });
+ghTokenInput.addEventListener('change', () => { ghToken = ghTokenInput.value.trim(); toast(ghToken ? 'GitHub token applied for this session.' : 'GitHub token cleared.', 'info'); });
+
+/* ============================================================
+   MOBILE TABS
+   ============================================================ */
+document.querySelectorAll('#mobile-tabbar .tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#mobile-tabbar .tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    appShell.className = `tab-${btn.dataset.tab}`;
+    if (cmInstance) setTimeout(() => cmInstance.refresh(), 50);
+  });
+});
+
+/* ============================================================
+   RESIZABLE PANELS (desktop only)
+   ============================================================ */
+function makeResizable(resizer) {
+  let prev, next, startX, prevW, nextW;
+  resizer.addEventListener('mousedown', (e) => {
+    prev = resizer.previousElementSibling; next = resizer.nextElementSibling;
+    startX = e.clientX; prevW = prev.getBoundingClientRect().width; nextW = next.getBoundingClientRect().width;
+    resizer.classList.add('active');
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+  function onMove(e) {
+    const dx = e.clientX - startX;
+    const newPrev = prevW + dx, newNext = nextW - dx;
+    if (newPrev > 200 && newNext > 200) {
+      prev.style.flexBasis = newPrev + 'px'; prev.style.flexGrow = 0;
+      next.style.flexBasis = newNext + 'px'; next.style.flexGrow = 0;
+      if (cmInstance) cmInstance.refresh();
+    }
+  }
+  function onUp() {
+    resizer.classList.remove('active');
+    document.body.style.userSelect = '';
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+}
+document.querySelectorAll('.resizer').forEach(makeResizable);
+
+collapseSidebarBtn.addEventListener('click', () => {
+  sidebarPanel.classList.toggle('collapsed');
+  collapseSidebarBtn.innerHTML = sidebarPanel.classList.contains('collapsed')
+    ? '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg>'
+    : '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 18l-6-6 6-6"/></svg>';
+});
+
+/* ============================================================
+   FULLSCREEN — EDITOR
+   ============================================================ */
+function showFullscreenEditor() {
+  if (!cmInstance) return;
+  fsEditorFilename.textContent = fileNameDisplay.textContent;
+  fullscreenEditorContent.appendChild(cmInstance.getWrapperElement());
+  fullscreenEditorOverlay.classList.add('visible');
+  setTimeout(() => { cmInstance.refresh(); cmInstance.focus(); }, 100);
+}
+function hideFullscreenEditor() {
+  editorContentArea.appendChild(cmInstance.getWrapperElement());
+  fullscreenEditorOverlay.classList.remove('visible');
+  setTimeout(() => cmInstance.refresh(), 200);
+}
+maximizeEditorBtn.addEventListener('click', showFullscreenEditor);
+minimizeEditorBtn.addEventListener('click', hideFullscreenEditor);
+
+/* ============================================================
+   FULLSCREEN — OUTPUT
+   ============================================================ */
+function showFullscreenOutput() {
+  fullscreenOutputContent.appendChild(outputContentArea);
+  fullscreenOutputOverlay.classList.add('visible');
+}
+function hideFullscreenOutput() {
+  $('output-panel').appendChild(document.querySelector('.browser-toolbar').nextElementSibling === outputContentArea ? outputContentArea : outputContentArea);
+  $('output-panel').appendChild(outputContentArea);
+  fullscreenOutputOverlay.classList.remove('visible');
+}
+maximizeOutputBtn.addEventListener('click', showFullscreenOutput);
+minimizeOutputBtn.addEventListener('click', hideFullscreenOutput);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (fullscreenEditorOverlay.classList.contains('visible')) hideFullscreenEditor();
+    if (fullscreenOutputOverlay.classList.contains('visible')) hideFullscreenOutput();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+    if (saveFileLocalBtn.style.display !== 'none') { e.preventDefault(); saveFileLocalBtn.click(); }
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+    if (cmInstance && cmInstance.getWrapperElement().offsetParent !== null) { e.preventDefault(); cmInstance.execCommand('find'); }
+  }
+});
+
+/* ============================================================
+   GITHUB API HELPERS
+   ============================================================ */
+function parseRepoInput(raw) {
+  raw = raw.trim();
+  let m = raw.match(/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?(?:\/tree\/([^\/]+)(?:\/(.*))?)?\/?$/i);
+  if (m) return { owner: m[1], repo: m[2], branch: m[3] || '', path: m[4] || '' };
+  m = raw.match(/^([^\/\s]+)\/([^\/\s]+)$/);
+  if (m) return { owner: m[1], repo: m[2], branch: '', path: '' };
+  return null;
+}
+
+async function ghFetch(url) {
+  loadingIndicator.style.display = 'flex';
+  const headers = { Accept: 'application/vnd.github.v3+json' };
+  if (ghToken) headers.Authorization = `token ${ghToken}`;
+  try {
+    const res = await fetch(url, { headers });
+    const remaining = res.headers.get('x-ratelimit-remaining');
+    if (remaining !== null && Number(remaining) <= 2) {
+      toast('GitHub API rate limit almost reached. Add a personal token in Settings for a higher limit.', 'warning');
+    }
+    if (!res.ok) {
+      if (res.status === 403 && remaining === '0') {
+        throw new Error('GitHub API rate limit exceeded. Add a personal access token in Settings to continue.');
+      }
+      if (res.status === 404) throw new Error('Not found. Check the repository name, branch, or path.');
+      let msg = `GitHub API error (${res.status})`;
+      try { const j = await res.json(); if (j.message) msg += `: ${j.message}`; } catch(_){}
+      throw new Error(msg);
+    }
+    return await res.json();
+  } catch (err) {
+    showError(err.message);
+    return null;
+  } finally {
+    loadingIndicator.style.display = 'none';
+  }
+}
+
+function showError(message) {
+  toast(message, 'error');
+  sidebarBody.innerHTML = `
+    <div class="error-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+      <div class="title">Something went wrong</div>
+      <div class="desc">${message}</div>
+    </div>`;
+}
+
+function renderSkeleton() {
+  sidebarBody.innerHTML = Array.from({length: 7}).map((_, i) => `
+    <div class="skeleton-item"><div class="skeleton-bar" style="width:${16 + (i%3)*4}px; height:16px; flex:none;"></div><div class="skeleton-bar" style="width:${60 - (i*4)}%"></div></div>
+  `).join('');
+}
+
+/* ============================================================
+   LOAD REPOSITORY
+   ============================================================ */
+async function populateBranches(owner, repo, preferred) {
+  const branches = await ghFetch(`${GITHUB_API}/repos/${owner}/${repo}/branches?per_page=100`);
+  branchSelect.innerHTML = '';
+  if (!branches) { branchSelect.innerHTML = '<option value="">branch</option>'; return preferred || 'main'; }
+  branches.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b.name; opt.textContent = b.name;
+    branchSelect.appendChild(opt);
+  });
+  const chosen = preferred && branches.some(b => b.name === preferred) ? preferred : (branches[0] ? branches[0].name : 'main');
+  branchSelect.value = chosen;
+  return chosen;
+}
+
+async function loadRepo(owner, repo, branchHint, pathHint) {
+  currentOwner = owner; currentRepo = repo;
+  dirCache.clear();
+  renderSkeleton();
+  repoLinkBtn.disabled = true;
+
+  const repoInfo = await ghFetch(`${GITHUB_API}/repos/${owner}/${repo}`);
+  if (!repoInfo) return;
+
+  const branch = await populateBranches(owner, repo, branchHint || repoInfo.default_branch);
+  currentBranch = branch;
+
+  repoMeta.style.display = 'block';
+  repoNameDisplay.textContent = `${owner}/${repo}`;
+  repoBranchStat.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13"><path d="M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 9a9 9 0 0 1-9 9"/></svg>${branch}`;
+  repoFileStat.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>…`;
+  repoGhLink.href = repoInfo.html_url;
+  repoLinkBtn.disabled = false;
+  repoLinkBtn.onclick = () => window.open(repoInfo.html_url, '_blank', 'noopener');
+
+  estimateFileCount(owner, repo, branch);
+  await fetchAndProcessPath(owner, repo, branch, pathHint || '');
+  toast(`Loaded ${owner}/${repo} @ ${branch}`, 'success');
+}
+
+async function estimateFileCount(owner, repo, branch) {
+  const key = `${owner}/${repo}/${branch}`;
+  if (repoFileCountCache.has(key)) { repoFileStat.querySelector('svg').nextSibling.textContent = repoFileCountCache.get(key); return; }
+  const data = await ghFetch(`${GITHUB_API}/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`);
+  if (data && data.tree) {
+    const count = data.tree.filter(t => t.type === 'blob').length;
+    const label = data.truncated ? `${count}+` : `${count}`;
+    repoFileCountCache.set(key, label);
+    repoFileStat.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>${label} files`;
+  }
+}
+
+branchSelect.addEventListener('change', () => {
+  if (currentOwner && currentRepo) fetchAndProcessPath(currentOwner, currentRepo, branchSelect.value, '');
+});
+
+async function fetchAndProcessPath(owner, repo, branch, path) {
+  currentOwner = owner; currentRepo = repo; currentBranch = branch;
+  updateHash();
+  const cacheKey = `${owner}/${repo}/${branch}/${path}`;
+  let contentData;
+  if (dirCache.has(cacheKey)) {
+    contentData = dirCache.get(cacheKey);
+  } else {
+    renderSkeleton();
+    contentData = await ghFetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/${path}?ref=${branch}`);
+    if (contentData) dirCache.set(cacheKey, contentData);
+  }
+  if (!contentData) return;
+
+  if (Array.isArray(contentData)) {
+    renderFileTree(contentData, path);
+    renderBreadcrumbs(path);
+    const indexFile = contentData.find(item => DEFAULT_INDEX_FILES.includes(item.name.toLowerCase()));
+    if (indexFile) {
+      await displayFileContent(indexFile);
+      hostHtmlFromGithub(indexFile.path);
+    } else {
+      resetOutputEmptyState();
+    }
+  } else if (contentData.type === 'file') {
+    renderBreadcrumbs(path);
+    await displayFileContent(contentData);
+    if (isDefaultIndexFile(contentData.name)) hostHtmlFromGithub(contentData.path);
+  }
+}
+
+function isDefaultIndexFile(name) { return name ? DEFAULT_INDEX_FILES.includes(name.toLowerCase()) : false; }
+
+function renderFileTree(items, basePath, filter) {
+  const ul = document.createElement('ul');
+  ul.id = fileTreeContainerId;
+  const sorted = [...items].sort((a,b) => (a.type === b.type) ? a.name.localeCompare(b.name) : (a.type === 'dir' ? -1 : 1));
+  const filtered = filter ? sorted.filter(i => i.name.toLowerCase().includes(filter.toLowerCase())) : sorted;
+
+  if (basePath) {
+    const up = document.createElement('li');
+    up.className = 'up-dir';
+    up.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 19V5m0 0-6 6m6-6 6 6"/></svg><span class="fname">.. (up a level)</span>`;
+    up.addEventListener('click', () => fetchAndProcessPath(currentOwner, currentRepo, currentBranch, basePath.substring(0, basePath.lastIndexOf('/')) || ''));
+    ul.appendChild(up);
+  }
+
+  if (filtered.length === 0) {
+    sidebarBody.innerHTML = '';
+    sidebarBody.appendChild(ul);
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15.5 15.5 21 21M10 17a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"/></svg><div class="title">No matches</div><div class="desc">Nothing in this folder matches your filter.</div>`;
+    sidebarBody.appendChild(empty);
+    return;
+  }
+
+  filtered.forEach(item => {
+    const li = document.createElement('li');
+    const isDir = item.type === 'dir';
+    let label = item.name;
+    if (filter) {
+      const idx = label.toLowerCase().indexOf(filter.toLowerCase());
+      if (idx > -1) label = label.slice(0, idx) + '<mark>' + label.slice(idx, idx+filter.length) + '</mark>' + label.slice(idx+filter.length);
+    }
+    li.innerHTML = `${svgIcon(item.name, isDir)}<span class="fname">${label}</span>`;
+    li.dataset.path = item.path;
+    li.addEventListener('click', () => {
+      if (isDir) fetchAndProcessPath(currentOwner, currentRepo, currentBranch, item.path);
+      else { displayFileContent(item); if (isDefaultIndexFile(item.name)) hostHtmlFromGithub(item.path); }
+    });
+    ul.appendChild(li);
+  });
+  sidebarBody.innerHTML = '';
+  sidebarBody.appendChild(ul);
+}
+
+fileSearchInput.addEventListener('input', () => { sidebarSearchInput.value = fileSearchInput.value; filterCurrentTree(fileSearchInput.value); });
+sidebarSearchInput.addEventListener('input', () => { fileSearchInput.value = sidebarSearchInput.value; filterCurrentTree(sidebarSearchInput.value); });
+function filterCurrentTree(term) {
+  const key = `${currentOwner}/${currentRepo}/${currentBranch}/${currentDirPath()}`;
+  const data = dirCache.get(key);
+  if (Array.isArray(data)) renderFileTree(data, currentDirPath(), term);
+}
+function currentDirPath() {
+  const active = document.querySelector('.breadcrumbs .current');
+  return breadcrumbPathAccum || '';
+}
+let breadcrumbPathAccum = '';
+
+function highlightFileInTree(filePath) {
+  document.querySelectorAll('#fileTree li').forEach(li => li.classList.toggle('active-file', li.dataset.path === filePath));
+}
+
+function renderBreadcrumbs(path) {
+  breadcrumbPathAccum = path;
+  breadcrumbs.innerHTML = '';
+  const rootA = document.createElement('a');
+  rootA.href = '#'; rootA.textContent = currentRepo || 'root';
+  rootA.addEventListener('click', (e) => { e.preventDefault(); fetchAndProcessPath(currentOwner, currentRepo, currentBranch, ''); });
+  breadcrumbs.appendChild(rootA);
+  const parts = path.split('/').filter(Boolean);
+  let acc = '';
+  parts.forEach((part, i) => {
+    acc += (i === 0 ? '' : '/') + part;
+    const sep = document.createElement('span'); sep.className = 'sep'; sep.textContent = '/';
+    breadcrumbs.appendChild(sep);
+    if (i === parts.length - 1) {
+      const cur = document.createElement('span'); cur.className = 'current'; cur.textContent = part;
+      breadcrumbs.appendChild(cur);
+    } else {
+      const a = document.createElement('a'); a.href = '#'; a.textContent = part;
+      const target = acc;
+      a.addEventListener('click', (e) => { e.preventDefault(); fetchAndProcessPath(currentOwner, currentRepo, currentBranch, target); });
+      breadcrumbs.appendChild(a);
+    }
+  });
+}
+
+/* ============================================================
+   FILE DISPLAY
+   ============================================================ */
+function setEditorView(el) {
+  editorPlaceholder.style.display = 'none';
+  rawCodeView.style.display = 'none';
+  rawImageContent.style.display = 'none';
+  if (cmInstance) cmInstance.getWrapperElement().style.display = 'none';
+  el.style.display = (el === rawImageContent) ? 'block' : 'flex';
+}
+
+async function displayFileContent(fileItem) {
+  if (!fileItem) return;
+  currentFilePath = fileItem.path;
+  fileNameDisplay.textContent = fileItem.name;
+  editorTab.classList.add('has-file');
+  editorTab.classList.remove('dirty');
+  editFileBtn.style.display = 'none';
+  cancelEditBtn.style.display = 'none';
+  runCodeBtn.style.display = 'none';
+  saveFileLocalBtn.style.display = 'none';
+  formatBtn.disabled = true;
+  wordWrapBtn.disabled = true;
+  fontDecBtn.disabled = true; fontIncBtn.disabled = true;
+  currentFileIsBinary = /\.(gif|jpe?g|tiff?|png|webp|bmp|svg|ico|pdf|zip)$/i.test(fileItem.name);
+
+  const fileData = (fileItem.content !== undefined)
+    ? fileItem
+    : await ghFetch(`${GITHUB_API}/repos/${currentOwner}/${currentRepo}/contents/${fileItem.path}?ref=${currentBranch}`);
+  if (!fileData) return;
+
+  if (/\.(gif|jpe?g|png|webp|svg)$/i.test(fileData.name)) {
+    rawImageContent.src = fileData.download_url;
+    setEditorView(rawImageContent);
+  } else if (currentFileIsBinary) {
+    editorPlaceholder.querySelector('.title').textContent = 'Binary file';
+    editorPlaceholder.querySelector('.desc').textContent = `Cannot display ${fileData.name} — binary files aren't rendered as text.`;
+    setEditorView(editorPlaceholder);
+  } else {
+    originalFileContentForEdit = fileData.content ? decodeBase64Utf8(fileData.content) : '';
+    const codeEl = rawCodeView.querySelector('code');
+    codeEl.textContent = originalFileContentForEdit || '(empty file)';
+    const ext = fileData.name.split('.').pop().toLowerCase();
+    codeEl.className = `hljs language-${ext}`;
+    hljs.highlightElement(codeEl);
+    setEditorView(rawCodeView);
+    editFileBtn.style.display = 'inline-flex';
+    wordWrapBtn.disabled = false; fontDecBtn.disabled = false; fontIncBtn.disabled = false;
+    formatBtn.disabled = ext !== 'json';
+
+    if (isDefaultIndexFile(fileData.name)) {
+      runCodeBtn.style.display = 'inline-flex';
+      runCodeBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 3v18l15-9L5 3Z"/></svg>Run';
+    } else if (JUDGE0_LANG_MAP[ext]) {
+      runCodeBtn.style.display = 'inline-flex';
+      runCodeBtn.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 3v18l15-9L5 3Z"/></svg>Run ${ext.toUpperCase()}`;
+    }
+  }
+  highlightFileInTree(fileData.path);
+}
+
+function decodeBase64Utf8(b64) {
+  try { return decodeURIComponent(escape(atob(b64))); } catch (e) { return atob(b64); }
+}
+
+/* ============================================================
+   EDIT MODE
+   ============================================================ */
+editFileBtn.addEventListener('click', () => {
+  if (!cmInstance) {
+    cmInstance = CodeMirror.fromTextArea(codeEditorTextarea, {
+      theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'material-darker' : 'eclipse',
+      lineNumbers: true,
+      autoCloseBrackets: true,
+      matchBrackets: true,
+      styleActiveLine: true,
+      lineWrapping: wordWrapOn,
+    });
+    cmInstance.setSize('100%', '100%');
+    cmInstance.on('change', () => editorTab.classList.add('dirty'));
+  }
+  const ext = currentFilePath.split('.').pop().toLowerCase();
+  const modeMap = { js:'javascript', jsx:'javascript', ts:'javascript', json:{name:'javascript', json:true}, html:'htmlmixed', htm:'htmlmixed', css:'css', py:'python', java:'text/x-java', c:'text/x-csrc', cpp:'text/x-c++src', md:'markdown' };
+  cmInstance.setOption('theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'material-darker' : 'eclipse');
+  cmInstance.setOption('mode', modeMap[ext] || 'text/plain');
+  cmInstance.setValue(originalFileContentForEdit);
+  cmInstance.setOption('fontSize', fontSize);
+  applyFontSize();
+  setEditorView(cmInstance.getWrapperElement());
+  cmInstance.refresh();
+  cmInstance.focus();
+  editorTab.classList.remove('dirty');
+  editFileBtn.style.display = 'none';
+  cancelEditBtn.style.display = 'inline-flex';
+  saveFileLocalBtn.style.display = 'inline-flex';
+});
+
+cancelEditBtn.addEventListener('click', () => {
+  setEditorView(rawCodeView);
+  editFileBtn.style.display = 'inline-flex';
+  cancelEditBtn.style.display = 'none';
+  saveFileLocalBtn.style.display = 'none';
+  editorTab.classList.remove('dirty');
+});
+
+saveFileLocalBtn.addEventListener('click', () => {
+  if (!cmInstance) return;
+  const blob = new Blob([cmInstance.getValue()], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fileNameDisplay.textContent;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast(`Downloaded ${fileNameDisplay.textContent}`, 'success');
+});
+
+formatBtn.addEventListener('click', () => {
+  const ext = currentFilePath.split('.').pop().toLowerCase();
+  if (ext !== 'json') { toast('Formatting is currently supported for JSON files only.', 'info'); return; }
+  try {
+    const source = cmInstance && cmInstance.getWrapperElement().offsetParent !== null ? cmInstance.getValue() : originalFileContentForEdit;
+    const pretty = JSON.stringify(JSON.parse(source), null, 2);
+    if (cmInstance && cmInstance.getWrapperElement().offsetParent !== null) { cmInstance.setValue(pretty); }
+    else { rawCodeView.querySelector('code').textContent = pretty; hljs.highlightElement(rawCodeView.querySelector('code')); originalFileContentForEdit = pretty; }
+    toast('JSON formatted.', 'success');
+  } catch (e) { toast('Could not parse this file as JSON.', 'error'); }
+});
+
+wordWrapBtn.addEventListener('click', () => {
+  wordWrapOn = !wordWrapOn;
+  wordWrapBtn.style.color = wordWrapOn ? 'var(--accent-blue)' : '';
+  if (cmInstance) cmInstance.setOption('lineWrapping', wordWrapOn);
+});
+function applyFontSize() {
+  fontSizeLabel.textContent = fontSize;
+  if (cmInstance) cmInstance.getWrapperElement().style.fontSize = fontSize + 'px';
+  rawCodeView.style.fontSize = fontSize + 'px';
+  if (cmInstance) cmInstance.refresh();
+}
+fontIncBtn.addEventListener('click', () => { fontSize = Math.min(fontSize + 1, 22); applyFontSize(); });
+fontDecBtn.addEventListener('click', () => { fontSize = Math.max(fontSize - 1, 10); applyFontSize(); });
+
+/* ============================================================
+   RUN / EXECUTE
+   ============================================================ */
+runCodeBtn.addEventListener('click', () => {
+  const isEditing = cmInstance && cmInstance.getWrapperElement().offsetParent !== null;
+  const code = isEditing ? cmInstance.getValue() : originalFileContentForEdit;
+  const ext = currentFilePath.split('.').pop().toLowerCase();
+  const fileName = currentFilePath.split('/').pop().toLowerCase();
+
+  if (DEFAULT_INDEX_FILES.includes(fileName)) {
+    runHtmlPreview(code);
+  } else if (JUDGE0_LANG_MAP[ext]) {
+    executeWithJudge0(code, JUDGE0_LANG_MAP[ext], ext);
+  }
+});
+
+function resetOutputEmptyState() {
+  outputContentArea.classList.add('no-preview');
+  outputEmptyState.style.display = 'flex';
+  hostedSiteFrame.style.display = 'none';
+  terminalOutput.style.display = 'none';
+  addrBarText.textContent = 'No preview available';
+  addrBar.classList.remove('secure');
+  openExternalBtn.disabled = true;
+  clearOutputBtn.style.display = 'none';
+}
+
+function runHtmlPreview(code) {
+  outputContentArea.classList.remove('no-preview');
+  outputEmptyState.style.display = 'none';
+  terminalOutput.style.display = 'none';
+  hostedSiteFrame.style.display = 'block';
+  hostedSiteFrame.srcdoc = code; // sanitized by the sandboxed iframe attribute set on the element
+  addrBarText.textContent = 'Local Preview (edited copy)';
+  addrBar.classList.remove('secure');
+  openExternalBtn.disabled = true;
+  clearOutputBtn.style.display = 'none';
+  lastRunWasWeb = true;
+  toast('Preview refreshed from your edited code.', 'success');
+}
+
+function hostHtmlFromGithub(filePath) {
+  outputContentArea.classList.remove('no-preview');
+  outputEmptyState.style.display = 'none';
+  terminalOutput.style.display = 'none';
+  hostedSiteFrame.style.display = 'block';
+  const url = `https://raw.githack.com/${currentOwner}/${currentRepo}/${currentBranch}/${filePath}`;
+  hostedSiteFrame.src = url;
+  addrBarText.textContent = url;
+  addrBar.classList.add('secure');
+  openExternalBtn.disabled = false;
+  openExternalBtn.onclick = () => window.open(url, '_blank', 'noopener');
+  clearOutputBtn.style.display = 'none';
+  lastRunWasWeb = true;
+}
+
+reloadPreviewBtn.addEventListener('click', () => {
+  if (hostedSiteFrame.style.display === 'block') {
+    if (hostedSiteFrame.src) { const s = hostedSiteFrame.src; hostedSiteFrame.src = ''; hostedSiteFrame.src = s; }
+    else if (hostedSiteFrame.srcdoc) { const s = hostedSiteFrame.srcdoc; hostedSiteFrame.srcdoc = ''; hostedSiteFrame.srcdoc = s; }
+    toast('Preview reloaded.', 'info');
+  }
+});
+
+async function executeWithJudge0(sourceCode, languageId, ext) {
+  outputContentArea.classList.remove('no-preview');
+  outputEmptyState.style.display = 'none';
+  hostedSiteFrame.style.display = 'none';
+  terminalOutput.style.display = 'block';
+  clearOutputBtn.style.display = 'inline-flex';
+  addrBarText.textContent = `Judge0 execution — ${ext}`;
+  addrBar.classList.remove('secure');
+  openExternalBtn.disabled = true;
+  terminalStatus.innerHTML = `<span class="stat"><div class="spinner"></div>Running…</span>`;
+  judge0Console.textContent = '';
+
+  if (!RAPIDAPI_KEY) {
+    terminalStatus.innerHTML = `<span class="stat fail"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>Not configured</span>`;
+    judge0Console.innerHTML = `<span class="label">No execution key is configured.</span>\nThis demo expects a secure backend proxy to supply the Judge0 API key at request time — it is intentionally never hard-coded here. Wire up a proxy endpoint to enable live code execution.`;
+    toast('Code execution needs a backend proxy for the Judge0 key.', 'warning');
+    return;
+  }
+
+  try {
+    const res = await fetch(COMPILER_ENDPOINT, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'X-RapidAPI-Key': RAPIDAPI_KEY, 'X-RapidAPI-Host': RAPIDAPI_HOST_JUDGE0 },
+      body: JSON.stringify({ language_id: languageId, source_code: sourceCode })
+    });
+    const result = await res.json();
+    const ok = result.status && /Accepted|^3$/.test(result.status.description || '');
+    terminalStatus.innerHTML = `
+      <span class="stat ${ok ? 'ok' : 'fail'}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">${ok ? '<path d="M20 6 9 17l-5-5"/>' : '<circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>'}</svg>${result.status ? result.status.description : 'Unknown'}</span>
+      <span class="stat"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>${result.time ? result.time + 's' : '—'}</span>`;
+    let out = '';
+    if (result.stdout) out += `<span class="label">--- OUTPUT ---</span>\n<span class="out-line">${escapeHtml(result.stdout)}</span>\n`;
+    if (result.stderr) out += `\n<span class="label">--- ERROR ---</span>\n<span class="err-line">${escapeHtml(result.stderr)}</span>\n`;
+    if (result.compile_output) out += `\n<span class="label">--- COMPILE OUTPUT ---</span>\n<span class="err-line">${escapeHtml(result.compile_output)}</span>\n`;
+    judge0Console.innerHTML = out || '<span class="label">No output.</span>';
+    toast('Code execution completed.', ok ? 'success' : 'warning');
+  } catch (e) {
+    terminalStatus.innerHTML = `<span class="stat fail"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>Connection failed</span>`;
+    judge0Console.textContent = 'Could not reach the execution service.';
+    toast('Failed to connect to the execution API.', 'error');
+  }
+}
+function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+clearOutputBtn.addEventListener('click', () => { judge0Console.textContent = ''; terminalStatus.innerHTML = ''; toast('Output cleared.', 'info'); });
+
+/* ============================================================
+   URL HASH STATE
+   ============================================================ */
+function updateHash() {
+  if (currentOwner) location.hash = `${currentOwner}/${currentRepo}/${currentBranch}/${currentFilePath || ''}`;
+}
+function loadFromHash() {
+  const hash = location.hash.substring(1);
+  if (!hash) return;
+  const [owner, repo, branch, ...pathParts] = hash.split('/');
+  if (owner && repo && branch) {
+    repoUrlInput.value = `${owner}/${repo}`;
+    loadRepo(owner, repo, branch, pathParts.join('/'));
+  }
+}
+
+/* ============================================================
+   LOAD BUTTON
+   ============================================================ */
+loadRepoBtn.addEventListener('click', () => {
+  const parsed = parseRepoInput(repoUrlInput.value);
+  if (!parsed) { toast('Enter a repository as owner/repo or a full GitHub URL.', 'error'); return; }
+  loadRepo(parsed.owner, parsed.repo, parsed.branch, parsed.path);
+});
+repoUrlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') loadRepoBtn.click(); });
+
+/* ============================================================
+   INIT
+   ============================================================ */
+lucide.createIcons();
+loadFromHash();
+})();
+</script>
 </body>
 </html>
