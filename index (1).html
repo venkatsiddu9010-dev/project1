@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Github Browser — Browse. Run. Ship.</title>
+<meta name="description" content="Point Github Browser at any public GitHub repository and get a live file tree, a syntax-highlighted editor, and a real output console — 60+ languages, zero local setup.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-glow" aria-hidden="true"></div>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header>
+  <div class="wrap">
+    <nav aria-label="Primary">
+      <a href="#top" class="brand"><span class="brand-mark">&lt;/&gt;</span>Github Browser</a>
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Toggle navigation menu">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <a href="#about" data-nav>About</a>
+        <a href="#theme" data-nav>Theme</a>
+        <a href="#browser" data-nav>Browser</a>
+        <a href="#team" data-nav>Team</a>
+        <a href="#highlights" data-nav>Highlights</a>
+      </div>
+      <a href="#browser" class="nav-cta" data-explore>Explore Project</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="wrap">
+      <span class="eyebrow"><span class="dot"></span>60 languages · one browser tab</span>
+      <h1>Browse any public repo.<br><span class="grad">Run its code.</span> Instantly.</h1>
+      <p class="tag">Access for GitHub — point it at any public repository and get a live editor plus a real output pane, no local setup required.</p>
+      <p class="desc">Github Browser lets you explore a public repo's file tree, open any source file with syntax highlighting, and execute it — across 60+ supported languages — directly from the browser. Static sites render live; scripts compile and run with real stdout.</p>
+      <div class="hero-actions">
+        <a href="#browser" class="btn btn-primary" data-explore>Explore Project <span aria-hidden="true">→</span></a>
+        <a href="#about" class="btn btn-ghost">Learn More</a>
+      </div>
+
+      <!-- signature: language spectrum bar -->
+      <div class="lang-bar" id="langBar" role="img" aria-label="Language distribution bar: Python, JavaScript, Java, Go, Rust, C++, TypeScript, Ruby, C#, and 51 more"></div>
+      <div class="lang-legend">
+        <span class="chip"><span class="sw" style="background:var(--blue)"></span>Python</span>
+        <span class="chip"><span class="sw" style="background:var(--gold)"></span>JavaScript</span>
+        <span class="chip"><span class="sw" style="background:var(--violet)"></span>Java</span>
+        <span class="chip"><span class="sw" style="background:var(--green)"></span>Go</span>
+        <span class="chip"><span class="sw" style="background:var(--pink)"></span>Rust</span>
+        <span class="chip"><span class="sw" style="background:var(--red)"></span>C++</span>
+        <span class="chip">+ 54 more</span>
+      </div>
+
+      <!-- hero visual: illustrative mock (non-interactive teaser) -->
+      <div class="hero-visual reveal">
+        <div class="window">
+          <div class="window-bar">
+            <span class="b r"></span><span class="b y"></span><span class="b g"></span>
+            <span class="path mono">owner/repo → src/main.py</span>
+          </div>
+          <div class="window-body">
+            <div class="tree" aria-hidden="true">
+              <div class="item folder">src</div>
+              <div class="item active" style="padding-left:16px;">main.py</div>
+              <div class="item" style="padding-left:16px;">utils.py</div>
+              <div class="item folder">tests</div>
+              <div class="item">README.md</div>
+              <div class="item">requirements.txt</div>
+            </div>
+            <div class="code-pane">
+<div><span class="ln">1</span><span class="cm"># fetched live from GitHub</span></div>
+<div><span class="ln">2</span><span class="kw">def</span> <span class="fn">greet</span>(name):</div>
+<div><span class="ln">3</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="str">f"Hello, {name}!"</span></div>
+<div><span class="ln">4</span></div>
+<div><span class="ln">5</span><span class="kw">print</span>(greet(<span class="str">"world"</span>))</div>
+<div style="margin-top:14px;color:var(--muted);"><span class="ln">&gt;</span> <span id="typedOut"></span></div>
+            </div>
+          </div>
+          <div class="run-strip">
+            <span>python3 · exit 0</span>
+            <span class="ok">● output ready</span>
+          </div>
+        </div>
+        <p class="hero-visual-caption">A preview of the real thing — try it yourself below.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="padded divider" id="about">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">01 · About the project</span>
+        <h2>Reading code shouldn't require cloning it first.</h2>
+        <p>Github Browser removes the friction between finding a public repository and actually understanding what it does — no git installed, no IDE configured, no dependency setup.</p>
+      </div>
+      <div class="about-grid">
+        <div class="about-card reveal">
+          <div class="ic" style="background:rgba(63,185,80,0.14);color:var(--green);">◆</div>
+          <h3>The problem</h3>
+          <p>Evaluating a repo usually means cloning it, installing a toolchain, and configuring an environment just to see it run — too much overhead for a quick look.</p>
+        </div>
+        <div class="about-card reveal">
+          <div class="ic" style="background:rgba(88,166,255,0.14);color:var(--blue);">◆</div>
+          <h3>Our objective</h3>
+          <p>Give anyone a single URL that opens a repo's files and runs its code in place, so browsing and evaluating a project takes seconds, not minutes.</p>
+        </div>
+        <div class="about-card reveal">
+          <div class="ic" style="background:rgba(163,113,247,0.14);color:var(--violet);">◆</div>
+          <h3>Why it matters</h3>
+          <p>Faster code review, easier teaching material, and a lighter way to sample open-source projects before committing local time to them.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THEME -->
+  <section class="padded divider" id="theme">
+    <div class="wrap">
+      <div class="theme-wrap">
+        <div class="reveal">
+          <span class="kicker">02 · Project theme</span>
+          <h2 style="margin-top:10px;margin-bottom:26px;">Access for GitHub</h2>
+          <div class="theme-points">
+            <div class="point">
+              <span class="num">01</span>
+              <div><h4>Browse</h4><p>Navigate any public repository's real file tree by owner, repo, and branch — folders, files, images, all of it.</p></div>
+            </div>
+            <div class="point">
+              <span class="num">02</span>
+              <div><h4>Read</h4><p>Open a file and get syntax-highlighted source instantly, in the language it was actually written in.</p></div>
+            </div>
+            <div class="point">
+              <span class="num">03</span>
+              <div><h4>Run</h4><p>Execute the file — static sites render live in a preview pane, scripts run against a 60+ language execution engine.</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="theme-orb reveal" aria-hidden="true">
+          <div class="theme-orb-inner">
+            <div class="big">60+</div>
+            <div class="lbl">languages, one runtime</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BROWSER APP -->
+  <section class="padded divider" id="browser">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">Try it</span>
+        <h2>Open a public repository</h2>
+        <p>Enter an owner and repository name — branch is optional. We'll pull the real file tree straight from GitHub.</p>
+      </div>
+
+      <form class="repo-form reveal" id="repoForm">
+        <div class="field">
+          <label for="ownerInput">Owner</label>
+          <input id="ownerInput" name="owner" type="text" placeholder="e.g. octocat" autocomplete="off" required>
+        </div>
+        <div class="field">
+          <label for="repoInput">Repository</label>
+          <input id="repoInput" name="repo" type="text" placeholder="e.g. Hello-World" autocomplete="off" required>
+        </div>
+        <div class="field field-narrow">
+          <label for="branchInput">Branch <span class="opt">(optional)</span></label>
+          <input id="branchInput" name="branch" type="text" placeholder="default" autocomplete="off">
+        </div>
+        <button type="submit" class="btn btn-primary" id="loadRepoBtn">
+          <span class="btn-label">Load repository</span>
+          <span class="spinner" hidden aria-hidden="true"></span>
+        </button>
+      </form>
+      <div class="repo-quicklinks">
+        Try:
+        <button type="button" class="chip-btn" data-sample="octocat/Hello-World">octocat/Hello-World</button>
+        <button type="button" class="chip-btn" data-sample="twbs/bootstrap">twbs/bootstrap</button>
+        <button type="button" class="chip-btn" data-sample="pallets/flask">pallets/flask</button>
+      </div>
+
+      <div id="formStatus" class="form-status" role="status" aria-live="polite"></div>
+
+      <div class="ide reveal" id="ideApp">
+        <div class="ide-window">
+          <div class="window-bar">
+            <span class="b r"></span><span class="b y"></span><span class="b g"></span>
+            <span class="path mono" id="repoPath">No repository loaded</span>
+          </div>
+
+          <div class="ide-body">
+            <aside class="tree-panel" id="treePanel" aria-label="Repository file tree">
+              <div class="panel-empty" id="treeEmpty">
+                <p>Load a repository above to see its files here.</p>
+              </div>
+              <ul class="tree-root" id="treeRoot" hidden></ul>
+            </aside>
+
+            <div class="editor-panel">
+              <div class="tabs" id="tabBar" role="tablist" aria-label="Open files"></div>
+              <div class="editor-toolbar">
+                <span class="file-meta mono" id="fileMeta">Select a file to view its source</span>
+                <div class="toolbar-actions">
+                  <button type="button" class="icon-btn" id="copyBtn" title="Copy code" disabled>Copy</button>
+                  <button type="button" class="icon-btn" id="downloadBtn" title="Download file" disabled>Download</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="runBtn" disabled>Run <span aria-hidden="true">▶</span></button>
+                </div>
+              </div>
+              <div class="code-scroll">
+                <div class="panel-empty" id="codeEmpty">
+                  <p>Nothing open yet. Pick a file from the tree to read its source.</p>
+                </div>
+                <pre class="code-block" id="codeBlock" hidden><code id="codeContent"></code></pre>
+              </div>
+
+              <div class="console-panel">
+                <div class="console-bar">
+                  <span class="mono">Console</span>
+                  <span class="run-status" id="runStatus"></span>
+                  <button type="button" class="icon-btn" id="clearConsoleBtn">Clear</button>
+                </div>
+                <pre class="console-output" id="consoleOutput"><span class="console-placeholder">Output will appear here after you run a file.</span></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section class="padded divider" id="team">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">03 · Our team</span>
+        <h2>The people behind Github Browser</h2>
+        <p>A small team covering the browser UI, the GitHub integration, and the multi-language execution backend.</p>
+      </div>
+      <div class="team-grid">
+
+        <div class="team-card reveal">
+          <div class="avatar" style="background:linear-gradient(135deg,var(--green),var(--blue));">VS</div>
+          <h3>M. Venkat Siddu</h3>
+          <div class="role">Project Lead &amp; Frontend</div>
+          <p class="contrib">Owns the overall architecture and built the resizable IDE layout and file explorer.</p>
+          <div class="socials">
+            <a href="#" aria-label="M. Venkat Siddu on GitHub">GH</a>
+            <a href="#" aria-label="M. Venkat Siddu on LinkedIn">in</a>
+          </div>
+        </div>
+
+        <div class="team-card reveal">
+          <div class="avatar" style="background:linear-gradient(135deg,var(--violet),var(--pink));">IR</div>
+          <h3>Sk Irfan</h3>
+          <div class="role">GitHub Integration</div>
+          <p class="contrib">Built the repository browsing layer — file tree, branches, and content fetching.</p>
+          <div class="socials">
+            <a href="#" aria-label="Sk Irfan on GitHub">GH</a>
+            <a href="#" aria-label="Sk Irfan on LinkedIn">in</a>
+          </div>
+        </div>
+
+        <div class="team-card reveal">
+          <div class="avatar" style="background:linear-gradient(135deg,var(--gold),var(--red));">DJ</div>
+          <h3>D. Jaswanth</h3>
+          <div class="role">Execution Engine</div>
+          <p class="contrib">Wired up the 60+ language code runner and output console.</p>
+          <div class="socials">
+            <a href="#" aria-label="D. Jaswanth on GitHub">GH</a>
+            <a href="#" aria-label="D. Jaswanth on LinkedIn">in</a>
+          </div>
+        </div>
+
+        <div class="team-card reveal">
+          <div class="avatar" style="background:linear-gradient(135deg,var(--blue),var(--green));">NK</div>
+          <h3>E. Nanda Kishore</h3>
+          <div class="role">UI / UX Design</div>
+          <p class="contrib">Designed the editor experience, theming, and the responsive layout.</p>
+          <div class="socials">
+            <a href="#" aria-label="E. Nanda Kishore on GitHub">GH</a>
+            <a href="#" aria-label="E. Nanda Kishore on LinkedIn">in</a>
+          </div>
+        </div>
+
+      </div>
+      <p class="team-note">Names, roles, and photos above are placeholders — swap in your team's real details and headshots.</p>
+    </div>
+  </section>
+
+  <!-- HIGHLIGHTS -->
+  <section class="padded divider" id="highlights">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">04 · Project highlights</span>
+        <h2>Built for speed, breadth, and clarity</h2>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat reveal"><div class="num green">60+</div><div class="lbl">Languages executable</div></div>
+        <div class="stat reveal"><div class="num blue">1</div><div class="lbl">URL to browse any public repo</div></div>
+        <div class="stat reveal"><div class="num violet">0</div><div class="lbl">Local installs required</div></div>
+        <div class="stat reveal"><div class="num gold">3</div><div class="lbl">Panel workspace: tree, editor, output</div></div>
+      </div>
+
+      <div class="feat-grid">
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--green);">▤</div>
+          <h3>Full repo navigation</h3>
+          <p>Traverse folders, breadcrumbs, and branches exactly as they exist in the source repository.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--blue);">▦</div>
+          <h3>Live preview for the web</h3>
+          <p>HTML entry points render immediately in an embedded preview pane — no build step.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--violet);">▧</div>
+          <h3>60+ language execution</h3>
+          <p>From Python to Go to Kotlin, run source files and read real stdout and stderr output.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--gold);">▨</div>
+          <h3>Syntax-aware editor</h3>
+          <p>Full syntax highlighting for any file you open, with line numbers and a monospace layout built for reading code.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--pink);">▥</div>
+          <h3>Multi-file tabs</h3>
+          <p>Open several files at once and switch between them without losing your place in the tree.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="ic" style="color:var(--red);">▩</div>
+          <h3>Copy &amp; download</h3>
+          <p>Grab the exact source of any open file with one click, or save it locally.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="padded">
+    <div class="wrap">
+      <div class="cta-band reveal">
+        <h2>Ready to browse a repo without leaving the tab?</h2>
+        <p>Drop in an owner/repo, pick a branch, and start reading — or running — the code.</p>
+        <div class="hero-actions">
+          <a href="#browser" class="btn btn-primary" data-explore>Explore Project <span aria-hidden="true">→</span></a>
+          <a href="https://github.com" class="btn btn-ghost" target="_blank" rel="noopener">View GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand"><span class="brand-mark">&lt;/&gt;</span>Github Browser</div>
+        <p>A browser-based way to explore public GitHub repositories and run their code across 60+ languages.</p>
+      </div>
+      <div>
+        <h4>Team</h4>
+        <ul>
+          <li>M. Venkat Siddu — Project Lead</li>
+          <li>Sk Irfan — GitHub Integration</li>
+          <li>D. Jaswanth — Execution Engine</li>
+          <li>E. Nanda Kishore — UI / UX Design</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Project</h4>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#theme">Theme</a></li>
+          <li><a href="#browser">Browser</a></li>
+          <li><a href="#highlights">Highlights</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Github Browser. Built for exploring open source.</span>
+      <span>Made with 60+ languages in mind.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
