@@ -1,12 +1,8 @@
-/* Home page logic: nav menu, active-link tracking, scroll reveal,
-   hero language bar + typing effect, and 3D tilt wiring for cards. */
 (function () {
   'use strict';
-
   /* NAV ------------------------------------------------------------- */
   const navToggle = document.getElementById('navToggle');
   const navLinks = document.getElementById('navLinks');
-
   if (navToggle && navLinks) {
     navToggle.addEventListener('click', () => {
       const isOpen = navLinks.classList.toggle('open');
@@ -19,12 +15,10 @@
       });
     });
   }
-
   const navAnchors = document.querySelectorAll('[data-nav]');
   const sections = Array.from(navAnchors)
     .map((a) => document.querySelector(a.getAttribute('href')))
     .filter(Boolean);
-
   if (sections.length && 'IntersectionObserver' in window) {
     const sectionObserver = new IntersectionObserver(
       (entries) => {
@@ -42,7 +36,6 @@
     );
     sections.forEach((s) => sectionObserver.observe(s));
   }
-
   /* SCROLL REVEAL ----------------------------------------------------- */
   const revealItems = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window) {
@@ -61,7 +54,6 @@
   } else {
     revealItems.forEach((i) => i.classList.add('in'));
   }
-
   /* HERO: language spectrum bar ---------------------------------------- */
   (function langBar() {
     const bar = document.getElementById('langBar');
@@ -86,7 +78,6 @@
       bar.appendChild(s);
     });
   })();
-
   /* HERO: typing effect ------------------------------------------------ */
   (function typedTerminal() {
     const el = document.getElementById('typedOut');
@@ -106,7 +97,6 @@
     }
     setTimeout(type, 900);
   })();
-
   /* 3D TILT ------------------------------------------------------------ */
   if (window.initTilt) {
     window.initTilt('.about-card', { max: 7, scale: 1.02 });

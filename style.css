@@ -490,3 +490,178 @@ footer ul a:hover{opacity:1;color:var(--green);}
   *{animation-duration:0.001ms !important;animation-iteration-count:1 !important;transition-duration:0.001ms !important;scroll-behavior:auto !important;}
   .window{transform:none !important;}
 }
+
+/* =========================================================================
+   GIST INTEGRATION
+   Everything below extends the existing design system (same tokens, same
+   card/button/toast language) for the Gists dashboard, the create/edit/
+   delete modals, and the auth badge. Nothing above this line was changed.
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------
+   AUTH BADGE (nav)
+--------------------------------------------------------------------- */
+.auth-slot{display:flex;align-items:center;margin-right:6px;}
+.auth-badge{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 5px;}
+.auth-badge .auth-avatar{width:24px;height:24px;border-radius:50%;display:block;}
+.auth-badge .auth-name{font-size:0.8rem;color:var(--text);}
+.auth-badge .auth-signout{padding:5px 10px;font-size:0.74rem;border-radius:999px;}
+.auth-connect-btn{white-space:nowrap;}
+
+/* ---------------------------------------------------------------------
+   AUTH GATE (empty/locked state before connecting)
+--------------------------------------------------------------------- */
+.auth-gate{display:flex;justify-content:center;padding:40px 0;}
+.auth-gate-card{
+  max-width:440px;text-align:center;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);padding:40px 32px;box-shadow:0 30px 60px -30px rgba(0,0,0,0.55);
+}
+.auth-gate-card .ic{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:1.2rem;box-shadow:0 3px 8px -2px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);}
+.auth-gate-card h3{font-size:1.25rem;margin-bottom:10px;}
+.auth-gate-card p{color:var(--muted);font-size:0.92rem;margin-bottom:22px;}
+.auth-gate-card code{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:'JetBrains Mono',monospace;font-size:0.85em;}
+
+/* ---------------------------------------------------------------------
+   MODALS (create / edit / delete / connect)
+--------------------------------------------------------------------- */
+.modal-overlay{
+  position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;
+  background:rgba(4,6,10,0.68);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  padding:20px;animation:toast-in .18s ease;
+}
+.modal-dialog{
+  width:100%;max-width:460px;max-height:88vh;overflow:auto;
+  background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius);
+  box-shadow:0 60px 120px -40px rgba(0,0,0,0.8);
+}
+.modal-dialog.wide{max-width:680px;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:2;}
+.modal-head h3{font-size:1.1rem;}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:4px 8px;border-radius:6px;}
+.modal-close:hover{color:var(--text);background:var(--surface-3);}
+.modal-body{padding:20px 22px;}
+.modal-body .field{margin-bottom:4px;}
+.modal-body .field label{display:block;font-size:0.8rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:6px;}
+.modal-body .field input{
+  width:100%;background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+  padding:11px 12px;border-radius:var(--radius-sm);font-size:0.92rem;transition:border-color .2s ease, box-shadow .2s ease;
+}
+.modal-body .field input:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(88,166,255,0.15);}
+.modal-help{color:var(--muted);font-size:0.88rem;line-height:1.6;margin:0 0 12px;}
+.modal-help-inline{color:var(--muted);font-size:0.78rem;display:block;margin-top:8px;}
+.modal-link{color:var(--blue);font-size:0.85rem;display:inline-block;}
+.modal-link:hover{text-decoration:underline;}
+.modal-error{
+  margin-top:14px;padding:10px 14px;border-radius:var(--radius-sm);
+  background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.3);color:var(--red);font-size:0.85rem;
+}
+.modal-foot{display:flex;align-items:center;gap:10px;padding:16px 22px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--surface);}
+.btn-danger{background:linear-gradient(180deg,#ff6b62,var(--red));color:#2b0403;box-shadow:0 4px 0 #b7392f, 0 10px 24px -8px rgba(248,81,73,0.45);}
+.btn-danger:hover{transform:translateY(-2px);}
+.danger-text{color:var(--red);border-color:rgba(248,81,73,0.35);}
+.danger-text:hover{border-color:var(--red);}
+
+.gist-visibility{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 20px;}
+.radio-pill{
+  display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--line);
+  padding:7px 14px;border-radius:999px;font-size:0.85rem;cursor:pointer;transition:border-color .2s ease;
+}
+.radio-pill:has(input:checked){border-color:var(--green);color:var(--green);}
+.radio-pill input{accent-color:var(--green);}
+
+/* file rows shared by CreateGistModal + EditGistModal (the "GistEditor") */
+.gist-files-container{display:flex;flex-direction:column;gap:14px;margin-bottom:14px;}
+.gist-file-row{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;}
+.gist-file-row-head{display:flex;gap:8px;padding:10px;border-bottom:1px solid var(--line);align-items:center;}
+.file-name-input{
+  flex:1 1 auto;min-width:0;background:var(--surface);border:1px solid var(--line);color:var(--text);
+  padding:8px 10px;border-radius:7px;font-size:0.85rem;
+}
+.file-name-input:focus{border-color:var(--blue);outline:none;}
+.file-lang-select{
+  background:var(--surface);border:1px solid var(--line);color:var(--text);
+  padding:8px 10px;border-radius:7px;font-size:0.8rem;flex:0 0 auto;
+}
+.file-remove-btn{flex:0 0 auto;padding:7px 10px;background:var(--surface);border:1px solid var(--line);color:var(--muted);border-radius:7px;cursor:pointer;}
+.file-remove-btn:hover{color:var(--red);border-color:rgba(248,81,73,0.4);}
+.file-remove-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.file-content-input{
+  width:100%;min-height:140px;resize:vertical;background:var(--ink);border:none;color:var(--text);
+  padding:14px 16px;font-size:0.85rem;line-height:1.6;
+}
+.file-content-input:focus{outline:none;box-shadow:inset 0 0 0 2px rgba(88,166,255,0.2);}
+
+/* ---------------------------------------------------------------------
+   DASHBOARD TOOLBAR + GRID (gists.html)
+--------------------------------------------------------------------- */
+.gist-toolbar{
+  display:flex;gap:14px;flex-wrap:wrap;align-items:end;background:var(--surface);border:1px solid var(--line);
+  padding:22px;border-radius:var(--radius);box-shadow:0 20px 44px -28px rgba(0,0,0,0.6);margin-bottom:28px;
+}
+.gist-toolbar .field{display:flex;flex-direction:column;gap:6px;flex:1 1 200px;min-width:160px;}
+.gist-toolbar .field-narrow{flex:0 1 170px;}
+.gist-toolbar label{font-size:0.8rem;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.gist-toolbar input, .gist-toolbar select{
+  background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+  padding:11px 12px;border-radius:var(--radius-sm);font-size:0.9rem;
+}
+.gist-toolbar input:focus, .gist-toolbar select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(88,166,255,0.15);}
+
+.gist-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:20px;}
+.gist-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;
+  cursor:pointer;transition:border-color .2s ease, transform .15s ease, box-shadow .2s ease;
+  display:flex;flex-direction:column;gap:12px;
+}
+.gist-card:hover{border-color:var(--line-strong);transform:translateY(-3px);box-shadow:0 20px 40px -22px rgba(0,0,0,0.55);}
+.gist-card:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+.gist-card-head{display:flex;align-items:center;justify-content:space-between;}
+.badge{font-family:'JetBrains Mono',monospace;font-size:0.7rem;padding:3px 9px;border-radius:999px;letter-spacing:0.02em;}
+.badge-public{color:var(--green);background:rgba(63,185,80,0.12);border:1px solid rgba(63,185,80,0.3);}
+.badge-secret{color:var(--gold);background:rgba(210,153,34,0.12);border:1px solid rgba(210,153,34,0.3);}
+.gist-card-count{color:var(--muted);font-size:0.76rem;}
+.gist-card-desc{font-size:1rem;line-height:1.4;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.gist-card-files{display:flex;flex-wrap:wrap;gap:6px;font-size:0.74rem;color:var(--muted);}
+.gist-card-files span{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:2px 8px;}
+.gist-card-dates{display:flex;justify-content:space-between;font-size:0.74rem;color:var(--muted);margin-top:auto;padding-top:10px;border-top:1px solid var(--line);}
+.gist-no-results{grid-column:1/-1;color:var(--muted);text-align:center;padding:40px 0;}
+
+/* skeleton loading state */
+.gist-card.skeleton{
+  cursor:default;height:170px;
+  background:linear-gradient(100deg, var(--surface) 30%, var(--surface-3) 50%, var(--surface) 70%);
+  background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* empty state reuses .panel-empty; add a little breathing room + button spacing */
+#gistEmpty, #gistLoadError{text-align:center;padding:60px 20px;}
+#gistEmpty .btn{margin-top:14px;}
+
+/* ---------------------------------------------------------------------
+   GIST DETAIL (viewer / GistFileTabs)
+--------------------------------------------------------------------- */
+.gist-detail-window{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  box-shadow:0 50px 100px -40px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+.gist-detail-meta{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--surface-2);font-size:0.82rem;color:var(--muted);}
+.gist-tabs-bar .tabs{border-bottom:1px solid var(--line);}
+.raw-block{white-space:pre-wrap;word-break:break-word;color:var(--muted);}
+
+/* light theme toggle for the code viewer only */
+.code-scroll.theme-light{background:#ffffff;}
+.code-scroll.theme-light .code-block{color:#24292e;}
+.code-scroll.theme-light .raw-block{color:#57606a;}
+
+/* ---------------------------------------------------------------------
+   RESPONSIVE — gist additions
+--------------------------------------------------------------------- */
+@media (max-width:640px){
+  .gist-toolbar{flex-direction:column;align-items:stretch;}
+  .gist-toolbar button{width:100%;justify-content:center;}
+  .gist-grid{grid-template-columns:1fr;}
+  .modal-dialog{max-height:92vh;}
+  .gist-file-row-head{flex-wrap:wrap;}
+  .auth-badge .auth-name{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+}

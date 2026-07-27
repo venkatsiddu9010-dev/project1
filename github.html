@@ -25,6 +25,9 @@
       <a href="home.html" class="nav-back">
         <span aria-hidden="true">←</span> Home
       </a>
+      <a href="gists.html" class="nav-back" style="margin-left:-6px;">Gists</a>
+      <div style="flex:1"></div>
+      <div id="authSlot" class="auth-slot"></div>
       <a href="https://github.com" class="nav-cta" target="_blank" rel="noopener">View GitHub</a>
     </nav>
   </div>
@@ -92,6 +95,7 @@
                 <div class="toolbar-actions">
                   <button type="button" class="icon-btn" id="copyBtn" title="Copy code" disabled>Copy</button>
                   <button type="button" class="icon-btn" id="downloadBtn" title="Download file" disabled>Download</button>
+                  <button type="button" class="icon-btn" id="saveGistBtn" title="Save this file as a Gist" disabled>Save as Gist</button>
                   <button type="button" class="btn btn-primary btn-sm" id="runBtn" disabled>Run <span aria-hidden="true">▶</span></button>
                 </div>
               </div>
@@ -130,6 +134,8 @@
 <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="auth.js"></script>
+<script src="gist-modals.js"></script>
 <script src="github.js"></script>
 </body>
 </html>

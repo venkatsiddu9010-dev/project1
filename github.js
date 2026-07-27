@@ -5,6 +5,7 @@
    3. File tree rendering
    4. Tabs + code viewer (highlight.js)
    5. Execution engine (Piston API for code, iframe preview for HTML)
+   6. Gist bridge: Save as Gist (from an open file) + Open in Editor (from a Gist)
    ========================================================================== */
 (function () {
   'use strict';
@@ -45,6 +46,7 @@
   const fileMeta = document.getElementById('fileMeta');
   const copyBtn = document.getElementById('copyBtn');
   const downloadBtn = document.getElementById('downloadBtn');
+  const saveGistBtn = document.getElementById('saveGistBtn');
   const runBtn = document.getElementById('runBtn');
   const codeEmpty = document.getElementById('codeEmpty');
   const codeBlock = document.getElementById('codeBlock');
@@ -53,6 +55,9 @@
   const consoleOutput = document.getElementById('consoleOutput');
   const runStatus = document.getElementById('runStatus');
   const clearConsoleBtn = document.getElementById('clearConsoleBtn');
+
+  const authSlot = document.getElementById('authSlot');
+  if (window.GitHubAuth && authSlot) GitHubAuth.renderBadge(authSlot);
 
   /* ---------------------------------------------------------------------
      State
@@ -369,6 +374,7 @@
       fileMeta.textContent = 'Select a file to view its source';
       copyBtn.disabled = true;
       downloadBtn.disabled = true;
+      if (saveGistBtn) saveGistBtn.disabled = true;
       runBtn.disabled = true;
       runBtn.innerHTML = 'Run <span aria-hidden="true">▶</span>';
       return;
@@ -380,6 +386,7 @@
     fileMeta.textContent = `${tab.path} · ${lang.hljs}`;
     copyBtn.disabled = false;
     downloadBtn.disabled = false;
+    if (saveGistBtn) saveGistBtn.disabled = false;
 
     const runnable = lang.kind === 'html' || !!lang.piston;
     runBtn.disabled = !runnable;
@@ -512,6 +519,46 @@
     iframe.srcdoc = tab.content;
     setRunStatus('Success', 'success');
   }
+
+  /* ---------------------------------------------------------------------
+     6. GIST BRIDGE
+  --------------------------------------------------------------------- */
+  if (saveGistBtn) {
+    saveGistBtn.addEventListener('click', () => {
+      const tab = state.tabs.find((t) => t.path === state.activeTab);
+      if (!tab) return;
+      if (!window.GistModals) {
+        showToast('Gist tools didn\u2019t load — refresh the page and try again.', 'error');
+        return;
+      }
+      GistModals.openCreateGistModal(
+        { description: tab.path, files: [{ filename: tab.name, content: tab.content }] },
+        (gist) => showToast('Saved as a new Gist', 'success')
+      );
+    });
+  }
+
+  // If we arrived here via "Open in Editor" from the Gists dashboard, load
+  // that file into a tab. This works even with no repository loaded.
+  (function bridgeOpenGist() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('openGist') !== '1') return;
+    let payload = null;
+    try {
+      payload = JSON.parse(sessionStorage.getItem('ghb_open_in_editor') || 'null');
+    } catch {}
+    if (!payload || !payload.name) return;
+    sessionStorage.removeItem('ghb_open_in_editor');
+
+    const virtualPath = `gist:${payload.name}`;
+    state.tabs.push({ path: virtualPath, name: payload.name, content: payload.content || '' });
+    state.activeTab = virtualPath;
+    renderTabs();
+    renderCode();
+    showToast(`Opened "${payload.name}" from your Gist`, 'success');
+    // Clean the URL so a refresh doesn't try to re-open it.
+    window.history.replaceState({}, '', window.location.pathname);
+  })();
 
   /* ---------------------------------------------------------------------
      Form wiring

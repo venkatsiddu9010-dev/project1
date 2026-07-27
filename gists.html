@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gists — Github Browser</title>
+<meta name="description" content="Browse, create, edit, and share your GitHub Gists — with syntax highlighting, a full code editor, and one-click execution.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" id="hljsTheme" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-glow" aria-hidden="true"></div>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header>
+  <div class="wrap-wide">
+    <nav aria-label="Primary">
+      <a href="home.html" class="brand"><span class="brand-mark">&lt;/&gt;</span>Github Browser</a>
+      <a href="home.html" class="nav-back"><span aria-hidden="true">←</span> Home</a>
+      <a href="github.html" class="nav-back" style="margin-left:-6px;">Browser</a>
+      <div style="flex:1"></div>
+      <div id="authSlot" class="auth-slot"></div>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="app-hero">
+    <div class="wrap-wide">
+      <div class="breadcrumb"><a href="home.html">Home</a><span aria-hidden="true">/</span><span>Gists</span></div>
+      <span class="eyebrow"><span class="dot"></span>GitHub Gists REST API · your account</span>
+      <h1>Your Gists</h1>
+      <p>Create, browse, edit, and share code snippets straight from your GitHub account. Connect once with a personal access token — everything else happens live against the real Gists API.</p>
+    </div>
+  </section>
+
+  <section class="padded" style="padding-top:0;">
+    <div class="wrap-wide">
+
+      <!-- View 1: not connected -->
+      <div class="auth-gate" id="authGate" hidden>
+        <div class="auth-gate-card">
+          <div class="ic" style="background:rgba(88,166,255,0.14);color:var(--blue);">◆</div>
+          <h3>Connect your GitHub account</h3>
+          <p>Your Gists are private to your account, so we need a personal access token with the <code>gist</code> scope to list, create, edit, and delete them on your behalf.</p>
+          <button type="button" class="btn btn-primary" id="authGateConnectBtn">Connect GitHub</button>
+        </div>
+      </div>
+
+      <!-- View 2: dashboard (list) -->
+      <div id="gistListView" hidden>
+        <div class="gist-toolbar reveal in">
+          <div class="field" style="flex:1 1 240px;">
+            <label for="gistSearchInput">Search</label>
+            <input id="gistSearchInput" type="text" placeholder="Search by description or filename…" autocomplete="off">
+          </div>
+          <div class="field field-narrow">
+            <label for="gistVisFilter">Visibility</label>
+            <select id="gistVisFilter">
+              <option value="all">All</option>
+              <option value="public">Public</option>
+              <option value="secret">Secret</option>
+            </select>
+          </div>
+          <div class="field field-narrow">
+            <label for="gistSortSelect">Sort by</label>
+            <select id="gistSortSelect">
+              <option value="updated">Recently updated</option>
+              <option value="created">Recently created</option>
+              <option value="name">File name</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-primary" id="newGistBtn" style="height:44px;">+ New Gist</button>
+        </div>
+
+        <div id="gistSkeleton" class="gist-grid" hidden>
+          <div class="gist-card skeleton"></div>
+          <div class="gist-card skeleton"></div>
+          <div class="gist-card skeleton"></div>
+        </div>
+
+        <div class="panel-empty" id="gistEmpty" hidden>
+          <p><strong>No gists yet.</strong> Create your first one, or save a file from the Browser as a gist.</p>
+          <button type="button" class="btn btn-primary btn-sm" id="emptyNewGistBtn">+ New Gist</button>
+        </div>
+
+        <div class="panel-empty" id="gistLoadError" hidden></div>
+
+        <div class="gist-grid" id="gistGrid" hidden></div>
+      </div>
+
+      <!-- View 3: single gist (viewer / editor) -->
+      <div id="gistDetailView" hidden>
+        <button type="button" class="btn btn-ghost btn-sm" id="backToListBtn" style="margin-bottom:18px;">← Back to Gists</button>
+        <div class="gist-detail-window">
+          <div class="window-bar">
+            <span class="b r"></span><span class="b y"></span><span class="b g"></span>
+            <span class="path mono" id="gistDetailPath">Loading gist…</span>
+            <div class="toolbar-actions" style="margin-left:auto;">
+              <button type="button" class="icon-btn" id="gistThemeToggle" title="Toggle light/dark theme">🌗</button>
+              <button type="button" class="icon-btn" id="gistOpenInEditorBtn" title="Open in Browser code editor">Open in Editor</button>
+              <button type="button" class="icon-btn" id="gistEditBtn" title="Edit this gist">Edit</button>
+              <button type="button" class="icon-btn" id="gistDeleteBtn" title="Delete this gist">Delete</button>
+            </div>
+          </div>
+          <div class="gist-detail-meta" id="gistDetailMeta"></div>
+          <div class="gist-tabs-bar" id="gistTabsBar"></div>
+          <div class="editor-toolbar">
+            <span class="file-meta mono" id="gistFileMeta"></span>
+            <div class="toolbar-actions">
+              <button type="button" class="icon-btn" id="gistViewRawBtn">View Raw</button>
+              <button type="button" class="icon-btn" id="gistCopyBtn">Copy</button>
+              <button type="button" class="icon-btn" id="gistDownloadBtn">Download</button>
+              <button type="button" class="btn btn-primary btn-sm" id="gistRunBtn" disabled>Run <span aria-hidden="true">▶</span></button>
+            </div>
+          </div>
+          <div class="code-scroll" id="gistCodeScroll">
+            <pre class="code-block" id="gistCodeBlock"><code id="gistCodeContent"></code></pre>
+            <pre class="code-block raw-block" id="gistRawBlock" hidden></pre>
+          </div>
+          <div class="console-panel" id="gistConsolePanel" hidden>
+            <div class="console-bar">
+              <span class="mono">Console</span>
+              <span class="run-status" id="gistRunStatus"></span>
+              <button type="button" class="icon-btn" id="gistClearConsoleBtn">Clear</button>
+            </div>
+            <pre class="console-output" id="gistConsoleOutput"><span class="console-placeholder">Output will appear here after you run a file.</span></pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap-wide">
+    <div class="foot-bottom">
+      <span>© 2026 Github Browser. Built for exploring open source.</span>
+      <a href="home.html" style="color:var(--green);">← Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="auth.js"></script>
+<script src="gist-modals.js"></script>
+<script src="gists.js"></script>
+</body>
+</html>
